@@ -1,3 +1,6 @@
+![GitHub last commit (master)](https://img.shields.io/github/last-commit/snowberry-software/DependencyInjection/master.svg?logo=github)
+[![NuGet Version](https://img.shields.io/nuget/v/Snowberry.DependencyInjection.svg?logo=nuget)](https://www.nuget.org/packages/Snowberry.DependencyInjection/)
+
 A lightweight easy to use IoC container for .NET.
 
 # Usage
