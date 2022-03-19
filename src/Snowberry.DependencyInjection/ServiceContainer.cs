@@ -326,6 +326,44 @@ public class ServiceContainer : IServiceContainer
         }
     }
 
+    /// <inheritdoc/>
+    public IServiceRegistry UnregisterService<T>(out bool successful)
+    {
+        return UnregisterService(typeof(T), out successful);
+    }
+
+    /// <inheritdoc/>
+    public IServiceRegistry UnregisterService(Type serviceType, out bool successful)
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        lock (_lock)
+        {
+            for (int i = _serviceDescriptors.Count - 1; i >= 0; i--)
+            {
+                var serviceDescriptor = _serviceDescriptors[i];
+
+                if (serviceDescriptor.ServiceType == serviceType)
+                {
+                    if (serviceDescriptor.Lifetime is ServiceLifetime.Singleton && serviceDescriptor.SingletonInstance is IDisposable disposableSingleton)
+                    {
+                        _disposables?.Remove(disposableSingleton);
+                        disposableSingleton.Dispose();
+                    }
+
+                    _serviceDescriptors.RemoveAt(i);
+                    successful = true;
+
+                    return this;
+                }
+            }
+        }
+
+        successful = false;
+        return this;
+    }
+
     /// <summary>
     /// The service factory that will be used.
     /// </summary>

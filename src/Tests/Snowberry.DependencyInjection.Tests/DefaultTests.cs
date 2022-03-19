@@ -166,4 +166,23 @@ public class DefaultTests
         Assert.Throws<ObjectDisposedException>(() => serviceContainer.CreateScope());
         Assert.Throws<ObjectDisposedException>(() => serviceContainer.GetService<ITestService>());
     }
+
+    [Fact]
+    public void UnregisterService()
+    {
+        var serviceContainer = new ServiceContainer();
+
+        TestService instance;
+        serviceContainer.RegisterSingleton<ITestService, TestService>(instance = new TestService());
+
+        Assert.True(serviceContainer.IsServiceRegistered<ITestService>());
+        Assert.False(instance.IsDisposed);
+
+        serviceContainer.UnregisterService<ITestService>(out bool successful);
+
+        Assert.True(successful);
+        Assert.False(serviceContainer.IsServiceRegistered<ITestService>());
+        Assert.True(instance.IsDisposed);
+
+    }
 }
