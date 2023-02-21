@@ -7,7 +7,7 @@ namespace Snowberry.DependencyInjection.Tests.Services;
 /// </summary>
 internal class TestAnotherServiceFull : ITestAnotherService
 {
-    public TestAnotherServiceFull(ITestService testService)
+    public TestAnotherServiceFull(ITestService testService, bool testPrimitive0, int testPrimitive1)
     {
         TestServiceSame = testService;
     }

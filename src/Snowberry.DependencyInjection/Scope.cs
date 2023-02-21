@@ -11,11 +11,13 @@ public class Scope : IScope
     private readonly object _lock = new();
     private List<IDisposable>? _disposables;
 
-#nullable disable
+    /// <summary>
+    /// Creates a new scope.
+    /// </summary>
+    /// <remarks>The <see cref="SetServiceFactory(IServiceFactory)"/> must be called before using the <see cref="ServiceFactory"/> property.</remarks>
     public Scope()
     {
     }
-#nullable enable
 
     /// <inheritdoc/>
     public void Dispose()
@@ -43,8 +45,10 @@ public class Scope : IScope
     }
 
     /// <inheritdoc/>
-    public void RegisterDisposable(IDisposable disposable!!)
+    public void RegisterDisposable(IDisposable disposable)
     {
+        _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
+
         lock (_lock)
         {
             if (IsDisposed)

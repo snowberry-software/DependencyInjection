@@ -38,6 +38,14 @@ public class ServiceContainer : IServiceContainer
         Options = options;
     }
 
+    /// <summary>
+    /// Adds default services to the container.
+    /// </summary>
+    protected virtual void AddDefaultServices()
+    {
+       
+    }
+
     /// <inheritdoc/>
     public void Dispose()
     {
@@ -63,8 +71,10 @@ public class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public void RegisterDisposable(IDisposable disposable!!)
+    public void RegisterDisposable(IDisposable disposable)
     {
+        _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
+
         lock (_lock)
         {
             if (_disposables == null)
@@ -172,17 +182,16 @@ public class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public IServiceDescriptor GetServiceDescriptor(Type serviceType!!)
+    public IServiceDescriptor GetServiceDescriptor(Type serviceType)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
         var descriptor = GetOptionalServiceDescriptor(serviceType);
 
-        if (descriptor == null)
-            throw new ServiceTypeNotRegistered(serviceType);
-
-        return descriptor;
+        return descriptor ?? throw new ServiceTypeNotRegistered(serviceType);
     }
 
     /// <inheritdoc/>
@@ -229,8 +238,10 @@ public class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public IServiceRegistry RegisterSingleton<T>(T instance!!)
+    public IServiceRegistry RegisterSingleton<T>(T instance)
     {
+        _ = instance ?? throw new ArgumentNullException(nameof(instance));
+
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
@@ -247,8 +258,10 @@ public class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public IServiceRegistry RegisterSingleton<T, TImpl>(TImpl instance!!) where TImpl : T
+    public IServiceRegistry RegisterSingleton<T, TImpl>(TImpl instance) where TImpl : T
     {
+        _ = instance ?? throw new ArgumentNullException(nameof(instance));
+
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
@@ -292,8 +305,11 @@ public class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public IServiceRegistry Register(Type serviceType!!, Type implementationType!!, ServiceLifetime lifetime, object? singletonInstance)
+    public IServiceRegistry Register(Type serviceType, Type implementationType, ServiceLifetime lifetime, object? singletonInstance)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+        _ = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
+
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 

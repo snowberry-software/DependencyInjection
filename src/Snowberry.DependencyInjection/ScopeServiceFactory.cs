@@ -12,10 +12,10 @@ public sealed class ScopeServiceFactory : IServiceFactory
     /// </summary>
     /// <param name="scope">The scope.</param>
     /// <param name="serviceFactory">The service factory that will be used to resolve all scope related requests.</param>
-    public ScopeServiceFactory(IScope scope!!, IServiceFactoryScoped serviceFactory!!)
+    public ScopeServiceFactory(IScope scope, IServiceFactoryScoped serviceFactory)
     {
-        Scope = scope;
-        ServiceFactory = serviceFactory;
+        Scope = scope ?? throw new ArgumentNullException(nameof(scope));
+        ServiceFactory = serviceFactory ?? throw new ArgumentNullException(nameof(serviceFactory));
     }
 
     /// <inheritdoc/>

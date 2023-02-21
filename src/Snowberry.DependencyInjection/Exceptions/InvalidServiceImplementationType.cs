@@ -7,14 +7,15 @@ namespace Snowberry.DependencyInjection.Exceptions;
 /// </summary>
 public sealed class InvalidServiceImplementationType : Exception
 {
-    public InvalidServiceImplementationType(Type serviceImplementationType!!) : base($"Cannot instantiate abstract classes or interfaces! ({serviceImplementationType.FullName})")
+    public InvalidServiceImplementationType(Type serviceImplementationType) : base($"Cannot instantiate abstract classes or interfaces! ({serviceImplementationType.FullName})")
     {
-        ServiceImplementationType = serviceImplementationType;
+        ServiceImplementationType = serviceImplementationType ?? throw new ArgumentNullException(nameof(serviceImplementationType));
     }
 
-    public InvalidServiceImplementationType(Type serviceImplementationType!!, string message!!) : base(message)
+    public InvalidServiceImplementationType(Type serviceImplementationType, string message) : base(message)
     {
-        ServiceImplementationType = serviceImplementationType;
+        ServiceImplementationType = serviceImplementationType ?? throw new ArgumentNullException(nameof(serviceImplementationType));
+        _ = message ?? throw new ArgumentNullException(nameof(message));
     }
 
     /// <summary>

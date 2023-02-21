@@ -46,7 +46,7 @@ public class DefaultTests
         using var serviceContainer = new ServiceContainer();
         serviceContainer.RegisterSingleton<ITestService>();
 
-        Assert.Throws<InvalidServiceImplementationType>(() => serviceContainer.GetService<ITestService>());
+        Assert.Throws<InvalidServiceImplementationType>(serviceContainer.GetService<ITestService>);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public class DefaultTests
     {
         using var serviceContainer = new ServiceContainer();
 
-        Assert.Throws<ServiceTypeNotRegistered>(() => serviceContainer.GetService<ITestService>());
+        Assert.Throws<ServiceTypeNotRegistered>(serviceContainer.GetService<ITestService>);
         Assert.Null(serviceContainer.GetOptionalService<ITestService>());
     }
 
@@ -92,7 +92,7 @@ public class DefaultTests
         using var serviceContainer = new ServiceContainer();
         serviceContainer.RegisterSingleton<ITestAnotherService, TestAnotherServiceFull>();
 
-        Assert.Throws<ServiceTypeNotRegistered>(() => serviceContainer.GetService<ITestAnotherService>());
+        Assert.Throws<ServiceTypeNotRegistered>(serviceContainer.GetService<ITestAnotherService>);
 
         Assert.Equal(0, serviceContainer.DisposeableCount);
     }
@@ -103,7 +103,7 @@ public class DefaultTests
         using var serviceContainer = new ServiceContainer();
         serviceContainer.RegisterSingleton<ITestAnotherService, TestAnotherServicePropertyRequired>();
 
-        Assert.Throws<ServiceTypeNotRegistered>(() => serviceContainer.GetService<ITestAnotherService>());
+        Assert.Throws<ServiceTypeNotRegistered>(serviceContainer.GetService<ITestAnotherService>);
 
         Assert.Equal(0, serviceContainer.DisposeableCount);
     }
@@ -163,8 +163,8 @@ public class DefaultTests
         }
 
         Assert.Throws<ObjectDisposedException>(() => serviceContainer.Register(typeof(ITestService), typeof(TestService), ServiceLifetime.Singleton, null));
-        Assert.Throws<ObjectDisposedException>(() => serviceContainer.CreateScope());
-        Assert.Throws<ObjectDisposedException>(() => serviceContainer.GetService<ITestService>());
+        Assert.Throws<ObjectDisposedException>(serviceContainer.CreateScope);
+        Assert.Throws<ObjectDisposedException>(serviceContainer.GetService<ITestService>);
     }
 
     [Fact]

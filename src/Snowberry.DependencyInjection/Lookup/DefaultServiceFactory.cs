@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using Snowberry.DependencyInjection.Attributes;
 using Snowberry.DependencyInjection.Exceptions;
 using Snowberry.DependencyInjection.Helper;
@@ -48,8 +49,11 @@ public class DefaultServiceFactory : IScopedServiceFactory
     /// <param name="serviceType">The service type.</param>
     /// <param name="implementationType">The implementation of the service type.</param>
     /// <returns>Either the existing instance for the <paramref name="serviceType"/> or a newly created one using the <paramref name="implementationType"/>.</returns>
-    private object LocateOrCreateScopeInstance(IScope? scope, Type serviceType!!, Type implementationType!!)
+    private object LocateOrCreateScopeInstance(IScope? scope, Type serviceType, Type implementationType)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+        _ = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
+
         lock (_lock)
         {
             if (scope != null && scope.IsDisposed)
@@ -96,8 +100,10 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
-    public object CreateInstance(Type type!!)
+    public object CreateInstance(Type type)
     {
+        _ = type ?? throw new ArgumentNullException(nameof(type));
+
         return CreateInstance(type, null);
     }
 
@@ -108,8 +114,10 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
-    public object CreateInstance(Type type!!, IScope? scope)
+    public object CreateInstance(Type type, IScope? scope)
     {
+        _ = type ?? throw new ArgumentNullException(nameof(type));
+
         if (type.IsInterface || type.IsAbstract)
             throw new InvalidServiceImplementationType(type, $"Cannot instantiate abstract classes or interfaces! ({type.FullName})!");
 
@@ -121,8 +129,7 @@ public class DefaultServiceFactory : IScopedServiceFactory
         if (constructor == null)
         {
             if (type.IsValueType)
-                return Activator.CreateInstance(type)!;
-
+                return CreateBuiltInType(type);
         }
         else
         {
@@ -158,14 +165,49 @@ public class DefaultServiceFactory : IScopedServiceFactory
 
     }
 
-    protected object GetInstanceFromServiceType(Type serviceType!!, IScope? scope)
+    protected object GetInstanceFromServiceType(Type serviceType, IScope? scope)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
+        var typeCode = Type.GetTypeCode(serviceType);
+        if (serviceType.IsValueType && typeCode is not TypeCode.Empty and not TypeCode.Object)
+            return CreateBuiltInType(serviceType);
+
         var descriptor = ServiceDescriptorReceiver.GetServiceDescriptor(serviceType);
         return GetInstanceFromDescriptor(descriptor, scope);
     }
 
-    protected object GetInstanceFromDescriptor(IServiceDescriptor serviceDescriptor!!, IScope? scope)
+    protected object CreateBuiltInType(Type type)
     {
+        var typeCode = Type.GetTypeCode(type);
+        return typeCode switch
+        {
+            TypeCode.Empty => throw new NotImplementedException(),
+            TypeCode.Object => throw new NotImplementedException(),
+            TypeCode.Boolean => false,
+            TypeCode.Byte => (byte)0,
+            TypeCode.Char => (char)0,
+            TypeCode.DateTime => DateTime.Now,
+            TypeCode.DBNull => DBNull.Value,
+            TypeCode.Decimal => (decimal)0,
+            TypeCode.Double => 0D,
+            TypeCode.Int16 => (short)0,
+            TypeCode.Int32 => 0,
+            TypeCode.Int64 => (long)0,
+            TypeCode.SByte => (sbyte)0,
+            TypeCode.Single => 0F,
+            TypeCode.String => "",
+            TypeCode.UInt16 => (ushort)0,
+            TypeCode.UInt32 => (uint)0,
+            TypeCode.UInt64 => (ulong)0,
+            _ => Activator.CreateInstance(type)
+        };
+    }
+
+    protected object GetInstanceFromDescriptor(IServiceDescriptor serviceDescriptor, IScope? scope)
+    {
+        _ = serviceDescriptor ?? throw new ArgumentNullException(nameof(serviceDescriptor));
+
         switch (serviceDescriptor.Lifetime)
         {
             case ServiceLifetime.Singleton:
@@ -218,8 +260,10 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
-    public object? GetOptionalService(Type serviceType!!)
+    public object? GetOptionalService(Type serviceType)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
         return GetOptionalService(serviceType, null);
     }
 
@@ -230,8 +274,10 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
-    public object? GetOptionalService(Type serviceType!!, IScope? scope)
+    public object? GetOptionalService(Type serviceType, IScope? scope)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
         var descriptor = ServiceDescriptorReceiver.GetOptionalServiceDescriptor(serviceType);
 
         if (descriptor == null)
@@ -258,20 +304,21 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
-    public object? GetService(Type serviceType!!)
+    public object? GetService(Type serviceType)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
         return GetService(serviceType, null);
     }
 
     /// <inheritdoc/>
-    public object GetService(Type serviceType!!, IScope? scope)
+    public object GetService(Type serviceType, IScope? scope)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
         object? service = GetOptionalService(serviceType, scope);
 
-        if (service == null)
-            throw new ServiceTypeNotRegistered(serviceType);
-
-        return service;
+        return service ?? throw new ServiceTypeNotRegistered(serviceType);
     }
 
     /// <inheritdoc/>

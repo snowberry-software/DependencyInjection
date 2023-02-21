@@ -10,8 +10,11 @@ internal class ThrowHelper
     /// <param name="serviceType">The service type.</param>
     /// <param name="serviceImplementationType">The implementation type of the service.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowInvalidServiceImplementationCast(Type serviceType!!, Type serviceImplementationType!!)
+    public static void ThrowInvalidServiceImplementationCast(Type serviceType, Type serviceImplementationType)
     {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+        _ = serviceImplementationType ?? throw new ArgumentNullException(nameof(serviceImplementationType));
+
         throw new InvalidCastException($"Service implementation '{serviceType.GetType().FullName}' can't be cast to '{serviceImplementationType.FullName}'!");
     }
 
@@ -20,8 +23,10 @@ internal class ThrowHelper
     /// </summary>
     /// <param name="serviceImplementationType">The service that has no valid constructors.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static void ThrowInvalidConstructor(Type serviceImplementationType!!)
+    public static void ThrowInvalidConstructor(Type serviceImplementationType)
     {
+        _ = serviceImplementationType ?? throw new ArgumentNullException(nameof(serviceImplementationType));
+
         throw new InvalidOperationException($"The type `{serviceImplementationType.FullName}` has no valid constructors and could not be created!");
     }
 

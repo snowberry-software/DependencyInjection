@@ -10,8 +10,8 @@
 		<Authors>Snowberry Software</Authors>
 		<Description>A lightweight easy to use IoC container for .NET.</Description>
 
-		<AssemblyVersion>1.0.0.1</AssemblyVersion>
-		<VersionPrefix>1.0.1</VersionPrefix>
+		<AssemblyVersion>1.0.0.2</AssemblyVersion>
+		<VersionPrefix>1.0.2</VersionPrefix>
 
 		<IsPackable>true</IsPackable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -19,7 +19,7 @@
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<IncludeBuildOutput>true</IncludeBuildOutput>
-		<Copyright>Copyright © 2022 Snowberry Software</Copyright>
+		<Copyright>Copyright © 2023 Snowberry Software</Copyright>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<PackageProjectUrl>https://github.com/snowberry-software/DependencyInjection</PackageProjectUrl>
 		<PackageReadmeFile>README.md</PackageReadmeFile>

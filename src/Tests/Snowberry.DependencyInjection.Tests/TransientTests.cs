@@ -28,8 +28,10 @@ public class TransientTests
     }
 
 #pragma warning disable xUnit1013 // Public method should be marked as test
-    public static void TestTransient<T>(ServiceContainer serviceContainer!!) where T : ITestService
+    public static void TestTransient<T>(ServiceContainer serviceContainer) where T : ITestService
     {
+        _ = serviceContainer ?? throw new ArgumentNullException(nameof(serviceContainer));
+
         Assert.Equal(1, serviceContainer.Count);
 
         var serviceA = serviceContainer.GetService<T>();
