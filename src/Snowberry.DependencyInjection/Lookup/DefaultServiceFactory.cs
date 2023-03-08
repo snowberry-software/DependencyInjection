@@ -114,6 +114,29 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
+    public ConstructorInfo? GetConstructor(Type instanceType)
+    {
+        var constructors = instanceType.GetConstructors();
+
+        if (constructors.Length == 1)
+            return constructors[0];
+
+        // Check for preferred constructor.
+        for (int i = 0; i < constructors.Length; i++)
+        {
+            var constructor = constructors[i];
+
+            if (constructor.GetCustomAttribute<PreferredConstructorAttribute>() != null)
+                return constructor;
+        }
+
+        // Otherwise get the constructor with the largest number of parameters.
+        return constructors
+            .OrderByDescending(c => c.GetParameters().Length)
+            .FirstOrDefault();
+    }
+
+    /// <inheritdoc/>
     public object CreateInstance(Type type, IScope? scope)
     {
         _ = type ?? throw new ArgumentNullException(nameof(type));
@@ -121,10 +144,7 @@ public class DefaultServiceFactory : IScopedServiceFactory
         if (type.IsInterface || type.IsAbstract)
             throw new InvalidServiceImplementationType(type, $"Cannot instantiate abstract classes or interfaces! ({type.FullName})!");
 
-        // Get the constructor with the largest number of parameters.
-        var constructor = type.GetConstructors()
-            .OrderByDescending(c => c.GetParameters().Length)
-            .FirstOrDefault();
+        var constructor = GetConstructor(type);
 
         if (constructor == null)
         {

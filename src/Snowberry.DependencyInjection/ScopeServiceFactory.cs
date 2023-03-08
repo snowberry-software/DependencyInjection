@@ -1,4 +1,5 @@
-﻿using Snowberry.DependencyInjection.Interfaces;
+﻿using System.Reflection;
+using Snowberry.DependencyInjection.Interfaces;
 
 namespace Snowberry.DependencyInjection;
 
@@ -52,6 +53,12 @@ public sealed class ScopeServiceFactory : IServiceFactory
     public T? GetOptionalService<T>()
     {
         return ServiceFactory.GetOptionalService<T>(Scope);
+    }
+
+    /// <inheritdoc/>
+    public ConstructorInfo? GetConstructor(Type instanceType)
+    {
+        return ServiceFactory.GetConstructor(instanceType);
     }
 
     /// <summary>

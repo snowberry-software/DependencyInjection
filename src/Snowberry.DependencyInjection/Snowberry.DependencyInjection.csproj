@@ -10,8 +10,8 @@
 		<Authors>Snowberry Software</Authors>
 		<Description>A lightweight easy to use IoC container for .NET.</Description>
 
-		<AssemblyVersion>1.0.0.2</AssemblyVersion>
-		<VersionPrefix>1.0.2</VersionPrefix>
+		<AssemblyVersion>1.0.0.3</AssemblyVersion>
+		<VersionPrefix>1.0.3</VersionPrefix>
 
 		<IsPackable>true</IsPackable>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

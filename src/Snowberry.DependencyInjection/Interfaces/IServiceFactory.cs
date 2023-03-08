@@ -1,3 +1,5 @@
+using System.Reflection;
+
 namespace Snowberry.DependencyInjection.Interfaces;
 
 /// <summary>
@@ -39,4 +41,11 @@ public interface IServiceFactory : IServiceProvider
     /// <typeparam name="T">The type to instantiate.</param>
     /// <returns>The instantiated instance as <typeparamref name="T"/>.</returns>
     T CreateInstance<T>();
+
+    /// <summary>
+    /// Gets the constructor that will be used to instantiate the given <paramref name="instanceType"/>.
+    /// </summary>
+    /// <param name="instanceType">The type of the instance.</param>
+    /// <returns>The constructor info.</returns>
+    ConstructorInfo? GetConstructor(Type instanceType);
 }

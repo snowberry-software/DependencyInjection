@@ -5,7 +5,7 @@ A lightweight easy to use IoC container for .NET.
 
 # Usage
 
-The ``ServiceContainer`` should be disposed when no longer in use.
+The `ServiceContainer` should be disposed when no longer in use.
 
 ```cs
 var serviceContainer = new ServiceContainer();
@@ -37,6 +37,7 @@ serviceContainer.RegisterSingleton<ITransientType, NewTransientType>();
 ```
 
 This behavior can be disabled by using the `ServiceContainerOptions` and creating the `ServiceContainer` like this
+
 ```cs
 var serviceContainer = new ServiceContainer(ServiceContainerOptions.ReadOnly);
 ```
@@ -63,6 +64,10 @@ using(var scope = serviceContainer.CreateScope())
 // Dispose container
 serviceContainer.Dispose();
 ```
+
+## Preferred constructor
+
+The `PreferredConstructorAttribute` attribute can be used to explicitly prefer a constructor. The attribute should be used only once.
 
 ## Service lifetime
 

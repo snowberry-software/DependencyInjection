@@ -1,4 +1,5 @@
-﻿using Snowberry.DependencyInjection.Exceptions;
+﻿using System.Reflection;
+using Snowberry.DependencyInjection.Exceptions;
 using Snowberry.DependencyInjection.Helper;
 using Snowberry.DependencyInjection.Interfaces;
 using Snowberry.DependencyInjection.Lookup;
@@ -43,7 +44,7 @@ public class ServiceContainer : IServiceContainer
     /// </summary>
     protected virtual void AddDefaultServices()
     {
-       
+
     }
 
     /// <inheritdoc/>
@@ -378,6 +379,12 @@ public class ServiceContainer : IServiceContainer
 
         successful = false;
         return this;
+    }
+
+    /// <inheritdoc/>
+    public ConstructorInfo? GetConstructor(Type instanceType)
+    {
+        return ((IServiceFactory)ServiceFactory).GetConstructor(instanceType);
     }
 
     /// <summary>

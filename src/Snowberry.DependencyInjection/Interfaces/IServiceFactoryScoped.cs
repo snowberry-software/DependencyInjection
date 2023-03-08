@@ -1,4 +1,6 @@
-﻿namespace Snowberry.DependencyInjection.Interfaces;
+﻿using System.Reflection;
+
+namespace Snowberry.DependencyInjection.Interfaces;
 
 /// <summary>
 /// <see cref="IServiceFactory"/> that is used for scopes.
@@ -65,4 +67,11 @@ public interface IServiceFactoryScoped
     /// <typeparam name="T">The type to instantiate.</param>
     /// <returns>The instantiated instance as <typeparamref name="T"/>.</returns>
     T CreateInstance<T>(IScope scope);
+
+    /// <summary>
+    /// Gets the constructor that will be used to instantiate the given <paramref name="instanceType"/>.
+    /// </summary>
+    /// <param name="instanceType">The type of the instance.</param>
+    /// <returns>The constructor info.</returns>
+    ConstructorInfo? GetConstructor(Type instanceType);
 }
