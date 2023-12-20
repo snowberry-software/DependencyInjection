@@ -78,7 +78,7 @@ public partial class DefaultServiceFactory
                 .Select(param =>
                 {
                     object? serviceKey = null;
-                    var keyedServiceAttribute = param.GetCustomAttribute<KeyedServiceAttribute>();
+                    var keyedServiceAttribute = param.GetCustomAttribute<FromKeyedServicesAttribute>();
 
                     if (keyedServiceAttribute != null)
                         serviceKey = keyedServiceAttribute.ServiceKey;
@@ -99,7 +99,7 @@ public partial class DefaultServiceFactory
                 if (injectAttribute == null)
                     continue;
 
-                var keyedServiceAttribute = property.GetCustomAttribute<KeyedServiceAttribute>();
+                var keyedServiceAttribute = property.GetCustomAttribute<FromKeyedServicesAttribute>();
 
                 object? propertyValue = null;
                 if (keyedServiceAttribute != null)

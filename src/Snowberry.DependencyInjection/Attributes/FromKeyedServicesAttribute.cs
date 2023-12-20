@@ -1,12 +1,12 @@
 ﻿namespace Snowberry.DependencyInjection.Attributes;
 
 /// <summary>
-/// Specifies which key should be used to receive the service.
+/// Specifies which key should be used to receive the keyed service.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-public sealed class KeyedServiceAttribute : Attribute
+public sealed class FromKeyedServicesAttribute : Attribute
 {
-    public KeyedServiceAttribute(object? serviceKey)
+    public FromKeyedServicesAttribute(object? serviceKey)
     {
         ServiceKey = serviceKey;
     }
