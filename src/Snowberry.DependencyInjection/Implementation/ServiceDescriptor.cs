@@ -1,6 +1,6 @@
 using Snowberry.DependencyInjection.Interfaces;
 
-namespace Snowberry.DependencyInjection;
+namespace Snowberry.DependencyInjection.Implementation;
 
 /// <inheritdoc cref="IServiceDescriptor"/>
 public class ServiceDescriptor : IServiceDescriptor
@@ -45,6 +45,11 @@ public class ServiceDescriptor : IServiceDescriptor
 
     /// <inheritdoc/>
     public Type ImplementationType { get; }
+
+    /// <summary>
+    /// The optional service key.
+    /// </summary>
+    public object? ServiceKey { get; }
 
     /// <inheritdoc/>
     public ServiceLifetime Lifetime { get; }

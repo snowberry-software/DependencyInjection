@@ -1,6 +1,6 @@
 ﻿using Snowberry.DependencyInjection.Interfaces;
 
-namespace Snowberry.DependencyInjection;
+namespace Snowberry.DependencyInjection.Implementation;
 
 public class Scope : IScope
 {
@@ -15,9 +15,11 @@ public class Scope : IScope
     /// Creates a new scope.
     /// </summary>
     /// <remarks>The <see cref="SetServiceFactory(IServiceFactory)"/> must be called before using the <see cref="ServiceFactory"/> property.</remarks>
+#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public Scope()
     {
     }
+#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     /// <inheritdoc/>
     public void Dispose()
@@ -56,7 +58,7 @@ public class Scope : IScope
 
             if (_disposables == null)
             {
-                _disposables = new List<IDisposable>() { disposable };
+                _disposables = [disposable];
                 return;
             }
 
@@ -88,9 +90,7 @@ public class Scope : IScope
         get
         {
             lock (_lock)
-            {
                 return _disposables?.Count ?? 0;
-            }
         }
     }
 }

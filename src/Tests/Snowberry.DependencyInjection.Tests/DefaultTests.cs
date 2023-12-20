@@ -1,6 +1,7 @@
 ﻿using Snowberry.DependencyInjection.Exceptions;
 using Snowberry.DependencyInjection.Interfaces;
 using Snowberry.DependencyInjection.Tests.Services;
+using Snowberry.DependencyInjection.Tests.Services.PropertyTestServices;
 using Xunit;
 
 namespace Snowberry.DependencyInjection.Tests;
@@ -162,7 +163,7 @@ public class DefaultTests
         {
         }
 
-        Assert.Throws<ObjectDisposedException>(() => serviceContainer.Register(typeof(ITestService), typeof(TestService), ServiceLifetime.Singleton, null));
+        Assert.Throws<ObjectDisposedException>(() => serviceContainer.Register(typeof(ITestService), typeof(TestService), null, ServiceLifetime.Singleton, null));
         Assert.Throws<ObjectDisposedException>(serviceContainer.CreateScope);
         Assert.Throws<ObjectDisposedException>(serviceContainer.GetService<ITestService>);
     }
@@ -175,13 +176,13 @@ public class DefaultTests
         TestService instance;
         serviceContainer.RegisterSingleton<ITestService, TestService>(instance = new TestService());
 
-        Assert.True(serviceContainer.IsServiceRegistered<ITestService>());
+        Assert.True(serviceContainer.IsServiceRegistered<ITestService>(null));
         Assert.False(instance.IsDisposed);
 
-        serviceContainer.UnregisterService<ITestService>(out bool successful);
+        serviceContainer.UnregisterService<ITestService>(null, out bool successful);
 
         Assert.True(successful);
-        Assert.False(serviceContainer.IsServiceRegistered<ITestService>());
+        Assert.False(serviceContainer.IsServiceRegistered<ITestService>(null));
         Assert.True(instance.IsDisposed);
 
     }

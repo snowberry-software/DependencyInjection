@@ -61,6 +61,30 @@ public sealed class ScopeServiceFactory : IServiceFactory
         return ServiceFactory.GetConstructor(instanceType);
     }
 
+    /// <inheritdoc/>
+    public object GetKeyedService(Type serviceType, object? serviceKey)
+    {
+        return ServiceFactory.GetKeyedService(serviceType, serviceKey, Scope);
+    }
+
+    /// <inheritdoc/>
+    public object? GetOptionalKeyedService(Type serviceType, object? serviceKey)
+    {
+        return ServiceFactory.GetOptionalKeyedService(serviceType, serviceKey, Scope);
+    }
+
+    /// <inheritdoc/>
+    public T GetKeyedService<T>(object? serviceKey)
+    {
+        return ServiceFactory.GetKeyedService<T>(serviceKey, Scope);
+    }
+
+    /// <inheritdoc/>
+    public T? GetOptionalKeyedService<T>(object? serviceKey)
+    {
+        return ServiceFactory.GetOptionalKeyedService<T>(serviceKey, Scope);
+    }
+
     /// <summary>
     /// The service factory that will be used to resolve all scope related requests.
     /// </summary>

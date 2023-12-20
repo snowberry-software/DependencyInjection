@@ -9,27 +9,31 @@ public interface IServiceDescriptorReceiver : IDisposeableContainer
     /// Gets the service descriptor for the specified <paramref name="serviceType"/>.
     /// </summary>
     /// <param name="serviceType">The type of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
     /// <returns>The service descriptor for the specified type.</returns>
-    IServiceDescriptor GetServiceDescriptor(Type serviceType);
+    IServiceDescriptor GetServiceDescriptor(Type serviceType, object? serviceKey);
 
     /// <summary>
     /// Gets the optional service descriptor for the specified <paramref name="serviceType"/>.
     /// </summary>
     /// <param name="serviceType">The type of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
     /// <returns>The optional service descriptor for the specified type.</returns>
-    IServiceDescriptor? GetOptionalServiceDescriptor(Type serviceType);
+    IServiceDescriptor? GetOptionalServiceDescriptor(Type serviceType, object? serviceKey);
 
     /// <summary>
     /// Gets the service descriptor for the specified <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The type of the service.</typeparam>
+    /// <param name="serviceKey">The optional service key.</param>
     /// <returns>The service descriptor for the specified type.</returns>
-    IServiceDescriptor GetServiceDescriptor<T>();
+    IServiceDescriptor GetServiceDescriptor<T>(object? serviceKey);
 
     /// <summary>
     /// Gets the optional service descriptor for the specified <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The type of the service.</typeparam>
+    /// <param name="serviceKey">The optional service key.</param>
     /// <returns>The optional service descriptor for the specified type.</returns>
-    IServiceDescriptor? GetOptionalServiceDescriptor<T>();
+    IServiceDescriptor? GetOptionalServiceDescriptor<T>(object? serviceKey);
 }
