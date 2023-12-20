@@ -16,16 +16,6 @@ public readonly struct ServiceIdentifier : IServiceIdentifier
         ServiceKey = serviceKey;
     }
 
-    public static ServiceIdentifier FromDescriptor(ServiceDescriptor serviceDescriptor)
-    {
-        return new(serviceDescriptor.ServiceType, serviceDescriptor.ServiceKey);
-    }
-
-    public static ServiceIdentifier FromServiceType(Type type)
-    {
-        return new ServiceIdentifier(type, null);
-    }
-
     /// <inheritdoc/>
     public bool Equals(IServiceIdentifier other)
     {
