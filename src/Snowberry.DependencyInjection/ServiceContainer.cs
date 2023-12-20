@@ -242,7 +242,7 @@ public partial class ServiceContainer : IServiceContainer
     /// <inheritdoc/>
     public ConstructorInfo? GetConstructor(Type instanceType)
     {
-        return ((IServiceFactory)ServiceFactory).GetConstructor(instanceType);
+        return ServiceFactory.GetConstructor(instanceType);
     }
 
     /// <summary>
