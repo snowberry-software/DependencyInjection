@@ -4,10 +4,10 @@ namespace Snowberry.DependencyInjection.Lookup.Cache;
 
 public readonly struct ScopeServiceCacheEntry : IScopeServiceCacheEntry
 {
-    public ScopeServiceCacheEntry(IScope? scope, Type serviceType, object instance)
+    public ScopeServiceCacheEntry(IScope? scope, IServiceIdentifier serviceIdentifier, object instance)
     {
         Scope = scope;
-        ServiceType = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+        ServiceIdentifier = serviceIdentifier ?? throw new ArgumentNullException(nameof(serviceIdentifier));
         Instance = instance ?? throw new ArgumentNullException(nameof(instance));
     }
 
@@ -15,7 +15,7 @@ public readonly struct ScopeServiceCacheEntry : IScopeServiceCacheEntry
     public IScope? Scope { get; }
 
     /// <inheritdoc/>
-    public Type ServiceType { get; }
+    public IServiceIdentifier ServiceIdentifier { get; }
 
     /// <inheritdoc/>
     public object Instance { get; }

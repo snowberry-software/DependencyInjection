@@ -11,9 +11,9 @@ public interface IScopeServiceCacheEntry
     IScope? Scope { get; }
 
     /// <summary>
-    /// The service type of the scope.
+    /// The service identifier.
     /// </summary>
-    Type ServiceType { get; }
+    IServiceIdentifier ServiceIdentifier { get; }
 
     /// <summary>
     /// The instance of the service type.

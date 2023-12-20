@@ -1,11 +1,9 @@
-using System.Reflection;
-
 namespace Snowberry.DependencyInjection.Interfaces;
 
 /// <summary>
 /// The factory that will be used to retrieve service instances.
 /// </summary>
-public interface IServiceFactory : IServiceProvider
+public interface IServiceFactory : IServiceProvider, IKeyedServiceProvider
 {
     /// <summary>
     /// Requests the instance for the given <typeparamref name="T"/> service type.
@@ -17,6 +15,7 @@ public interface IServiceFactory : IServiceProvider
     /// <summary>
     /// Requests the instance for the given optional <paramref name="serviceType"/>.
     /// </summary>
+    /// <remarks>The method will not throw an exception if the service hasn't been found.</remarks>
     /// <param name="serviceType">The type of the requested service.</param>
     /// <returns>The requested service instance.</returns>
     object? GetOptionalService(Type serviceType);
@@ -24,6 +23,7 @@ public interface IServiceFactory : IServiceProvider
     /// <summary>
     /// Requests the instance for the given optional <typeparamref name="T"/> service type.
     /// </summary>
+    /// <remarks>The method will not throw an exception if the service hasn't been found.</remarks>
     /// <typeparam name="T">The service type.</typeparam>
     /// <returns>The requested service instance as <typeparamref name="T"/>.</returns>
     T? GetOptionalService<T>();
@@ -41,11 +41,4 @@ public interface IServiceFactory : IServiceProvider
     /// <typeparam name="T">The type to instantiate.</param>
     /// <returns>The instantiated instance as <typeparamref name="T"/>.</returns>
     T CreateInstance<T>();
-
-    /// <summary>
-    /// Gets the constructor that will be used to instantiate the given <paramref name="instanceType"/>.
-    /// </summary>
-    /// <param name="instanceType">The type of the instance.</param>
-    /// <returns>The constructor info.</returns>
-    ConstructorInfo? GetConstructor(Type instanceType);
 }

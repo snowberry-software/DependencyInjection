@@ -1,6 +1,6 @@
 ﻿using Snowberry.DependencyInjection.Attributes;
 
-namespace Snowberry.DependencyInjection.Tests.Services;
+namespace Snowberry.DependencyInjection.Tests.Services.PropertyTestServices;
 
 /// <summary>
 /// Used to test constructor and property injection.

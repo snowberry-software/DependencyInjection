@@ -1,14 +1,15 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using Snowberry.DependencyInjection.Exceptions;
-using Snowberry.DependencyInjection.Helper;
+using Snowberry.DependencyInjection.Implementation;
 using Snowberry.DependencyInjection.Interfaces;
 using Snowberry.DependencyInjection.Lookup;
 
 namespace Snowberry.DependencyInjection;
 
-public class ServiceContainer : IServiceContainer
+public partial class ServiceContainer : IServiceContainer
 {
-    private List<IServiceDescriptor> _serviceDescriptors = new();
+    private ConcurrentDictionary<IServiceIdentifier, IServiceDescriptor> _serviceDescriptorMapping = [];
     private List<IDisposable>? _disposables;
     private readonly object _lock = new();
     private bool _isDisposed;
@@ -80,12 +81,60 @@ public class ServiceContainer : IServiceContainer
         {
             if (_disposables == null)
             {
-                _disposables = new List<IDisposable>() { disposable };
+                _disposables = [disposable];
                 return;
             }
 
             _disposables.Add(disposable);
         }
+    }
+
+    /// <inheritdoc/>
+    public IServiceDescriptor? GetOptionalServiceDescriptor(Type serviceType, object? serviceKey)
+    {
+        lock (_lock)
+        {
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(ServiceContainer));
+
+            var serviceIdentifier = new ServiceIdentifier(serviceType, serviceKey);
+
+            if (_serviceDescriptorMapping.TryGetValue(serviceIdentifier, out var serviceDescriptor))
+                return serviceDescriptor;
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc/>
+    public IServiceDescriptor GetServiceDescriptor(Type serviceType, object? serviceKey)
+    {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        var descriptor = GetOptionalServiceDescriptor(serviceType, serviceKey);
+
+        return descriptor ?? throw new ServiceTypeNotRegistered(serviceType);
+    }
+
+    /// <inheritdoc/>
+    public IServiceDescriptor GetServiceDescriptor<T>(object? serviceKey)
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        return GetServiceDescriptor(typeof(T), serviceKey);
+    }
+
+    /// <inheritdoc/>
+    public IServiceDescriptor? GetOptionalServiceDescriptor<T>(object? serviceKey)
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        return GetOptionalServiceDescriptor(typeof(T), serviceKey);
     }
 
     /// <inheritdoc/>
@@ -137,34 +186,6 @@ public class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public IServiceDescriptor? GetOptionalServiceDescriptor(Type serviceType)
-    {
-        lock (_lock)
-        {
-            if (IsDisposed)
-                throw new ObjectDisposedException(nameof(ServiceContainer));
-
-            for (int i = 0; i < _serviceDescriptors.Count; i++)
-            {
-                var serviceDescriptor = _serviceDescriptors[i];
-                if (serviceDescriptor.ServiceType == serviceType)
-                    return serviceDescriptor;
-            }
-        }
-
-        return null;
-    }
-
-    /// <inheritdoc/>
-    public IServiceDescriptor? GetOptionalServiceDescriptor<T>()
-    {
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return GetOptionalServiceDescriptor(typeof(T));
-    }
-
-    /// <inheritdoc/>
     public T GetService<T>()
     {
         if (IsDisposed)
@@ -183,208 +204,45 @@ public class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public IServiceDescriptor GetServiceDescriptor(Type serviceType)
-    {
-        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
-
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        var descriptor = GetOptionalServiceDescriptor(serviceType);
-
-        return descriptor ?? throw new ServiceTypeNotRegistered(serviceType);
-    }
-
-    /// <inheritdoc/>
-    public IServiceDescriptor GetServiceDescriptor<T>()
+    public object GetKeyedService(Type serviceType, object? serviceKey)
     {
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
-        return GetServiceDescriptor(typeof(T));
+        return ServiceFactory.GetKeyedService(serviceType, serviceKey);
     }
 
     /// <inheritdoc/>
-    public bool IsServiceRegistered(Type serviceType)
+    public object? GetOptionalKeyedService(Type serviceType, object? serviceKey)
     {
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
-        lock (_lock)
-        {
-            for (int i = 0; i < _serviceDescriptors.Count; i++)
-                if (_serviceDescriptors[i].ServiceType == serviceType)
-                    return true;
-        }
-
-        return false;
+        return ServiceFactory.GetOptionalKeyedService(serviceType, serviceKey);
     }
 
     /// <inheritdoc/>
-    public bool IsServiceRegistered<T>()
+    public T GetKeyedService<T>(object? serviceKey)
     {
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
-        return IsServiceRegistered(typeof(T));
+        return ServiceFactory.GetKeyedService<T>(serviceKey);
     }
 
     /// <inheritdoc/>
-    public IServiceRegistry RegisterSingleton<T>()
+    public T? GetOptionalKeyedService<T>(object? serviceKey)
     {
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
-        return Register(typeof(T), typeof(T), ServiceLifetime.Singleton, null);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry RegisterSingleton<T>(T instance)
-    {
-        _ = instance ?? throw new ArgumentNullException(nameof(instance));
-
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return Register(typeof(T), typeof(T), ServiceLifetime.Singleton, instance);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry RegisterSingleton<T, TImpl>() where TImpl : T
-    {
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return Register(typeof(T), typeof(TImpl), ServiceLifetime.Singleton, null);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry RegisterSingleton<T, TImpl>(TImpl instance) where TImpl : T
-    {
-        _ = instance ?? throw new ArgumentNullException(nameof(instance));
-
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return Register(typeof(T), typeof(TImpl), ServiceLifetime.Singleton, instance);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry RegisterTransient<T>()
-    {
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return Register(typeof(T), typeof(T), ServiceLifetime.Transient, null);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry RegisterTransient<T, TImpl>() where TImpl : T
-    {
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return Register(typeof(T), typeof(TImpl), ServiceLifetime.Transient, null);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry RegisterScoped<T>()
-    {
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return Register(typeof(T), typeof(T), ServiceLifetime.Scoped, null);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry RegisterScoped<T, TImpl>() where TImpl : T
-    {
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        return Register(typeof(T), typeof(TImpl), ServiceLifetime.Scoped, null);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry Register(Type serviceType, Type implementationType, ServiceLifetime lifetime, object? singletonInstance)
-    {
-        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
-        _ = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
-
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        if (singletonInstance != null && lifetime != ServiceLifetime.Singleton)
-            throw new ArgumentException("Singleton can't be used in non-singleton lifetime!", nameof(singletonInstance));
-
-        lock (_lock)
-        {
-            int index = _serviceDescriptors.FindIndex(x => x.ServiceType == serviceType);
-
-            var descriptor = lifetime switch
-            {
-                ServiceLifetime.Singleton => ServiceDescriptor.Singleton(serviceType, implementationType, singletonInstance),
-                ServiceLifetime.Scoped => ServiceDescriptor.Scoped(serviceType, implementationType),
-                ServiceLifetime.Transient => ServiceDescriptor.Transient(serviceType, implementationType),
-                _ => ThrowHelper.ThrowServiceLifetimeNotImplemented(lifetime) as IServiceDescriptor
-            };
-
-            if (index == -1)
-            {
-                _serviceDescriptors.Add(descriptor!);
-                return this;
-            }
-
-            if (AreRegisteredServicesReadOnly)
-                throw new InvalidOperationException($"Service type '{serviceType.FullName}' is already registered!");
-
-            _serviceDescriptors[index] = descriptor!;
-            return this;
-        }
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry UnregisterService<T>(out bool successful)
-    {
-        return UnregisterService(typeof(T), out successful);
-    }
-
-    /// <inheritdoc/>
-    public IServiceRegistry UnregisterService(Type serviceType, out bool successful)
-    {
-        if (IsDisposed)
-            throw new ObjectDisposedException(nameof(ServiceContainer));
-
-        lock (_lock)
-        {
-            for (int i = _serviceDescriptors.Count - 1; i >= 0; i--)
-            {
-                var serviceDescriptor = _serviceDescriptors[i];
-
-                if (serviceDescriptor.ServiceType == serviceType)
-                {
-                    if (serviceDescriptor.Lifetime is ServiceLifetime.Singleton && serviceDescriptor.SingletonInstance is IDisposable disposableSingleton)
-                    {
-                        _disposables?.Remove(disposableSingleton);
-                        disposableSingleton.Dispose();
-                    }
-
-                    _serviceDescriptors.RemoveAt(i);
-                    successful = true;
-
-                    return this;
-                }
-            }
-        }
-
-        successful = false;
-        return this;
+        return ServiceFactory.GetOptionalKeyedService<T>(serviceKey);
     }
 
     /// <inheritdoc/>
     public ConstructorInfo? GetConstructor(Type instanceType)
     {
-        return ((IServiceFactory)ServiceFactory).GetConstructor(instanceType);
+        return ServiceFactory.GetConstructor(instanceType);
     }
 
     /// <summary>
@@ -399,7 +257,7 @@ public class ServiceContainer : IServiceContainer
         {
             lock (_lock)
             {
-                return _serviceDescriptors.Count;
+                return _serviceDescriptorMapping.Count;
             }
         }
     }

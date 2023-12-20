@@ -20,58 +20,36 @@ public interface IServiceFactoryScoped
     /// <param name="scope">The scope that has been disposed.</param>
     void NotifyScopeDisposed(IScope? scope);
 
-    /// <summary>
-    /// Requests the instance for the given <paramref name="serviceType"/>.
-    /// </summary>
-    /// <param name="serviceType">The type of the requested service.</param>
-    /// <param name="scope">The scope where the service descriptor lives in.</param>
-    /// <returns>The requested service instance.</returns>
+    /// <inheritdoc cref="IServiceProvider.GetService(Type)"/>
     object GetService(Type serviceType, IScope scope);
 
-    /// <summary>
-    /// Requests the instance for the given <typeparamref name="T"/> service type.
-    /// </summary>
-    /// <param name="scope">The scope where the service descriptor lives in.</param>
-    /// <typeparam name="T">The service type.</typeparam>
-    /// <returns>The requested service instance as <typeparamref name="T"/>.</returns>
+    /// <inheritdoc cref="IServiceFactory.GetService{T}"/>
     T GetService<T>(IScope scope);
 
-    /// <summary>
-    /// Requests the instance for the given optional <paramref name="serviceType"/>.
-    /// </summary>
-    /// <param name="serviceType">The type of the requested service.</param>
-    /// <param name="scope">The scope where the service descriptor lives in.</param>
-    /// <returns>The requested service instance.</returns>
+    /// <inheritdoc cref="IServiceFactory.GetOptionalService(Type)"/>
     object? GetOptionalService(Type serviceType, IScope scope);
 
-    /// <summary>
-    /// Requests the instance for the given optional <typeparamref name="T"/> service type.
-    /// </summary>
-    /// <param name="scope">The scope where the service descriptor lives in.</param>
-    /// <typeparam name="T">The service type.</typeparam>
-    /// <returns>The requested service instance as <typeparamref name="T"/>.</returns>
+    /// <inheritdoc cref="IServiceFactory.GetOptionalService{T}()"/>
     T? GetOptionalService<T>(IScope scope);
 
-    /// <summary>
-    /// Creates a new instance of the given <paramref name="type"/> and injects the services during initialization.
-    /// </summary>
-    /// <param name="type">The type to instantiate.</param>
-    /// <param name="scope">The scope where the service descriptor lives in.</param>
-    /// <returns>The instantiated instance.</returns>
+    /// <inheritdoc cref="IServiceFactory.CreateInstance(Type)"/>
     object CreateInstance(Type type, IScope scope);
 
-    /// <summary>
-    /// Creates a new instance of the given <typeparamref name="T"/> and injects the services during initialization.
-    /// </summary>
-    /// <param name="scope">The scope where the service descriptor lives in.</param>
-    /// <typeparam name="T">The type to instantiate.</param>
-    /// <returns>The instantiated instance as <typeparamref name="T"/>.</returns>
+    /// <inheritdoc cref="IServiceFactory.CreateInstance{T}()"/>
     T CreateInstance<T>(IScope scope);
 
-    /// <summary>
-    /// Gets the constructor that will be used to instantiate the given <paramref name="instanceType"/>.
-    /// </summary>
-    /// <param name="instanceType">The type of the instance.</param>
-    /// <returns>The constructor info.</returns>
+    /// <inheritdoc cref="IServiceFactory.GetConstructor(Type)"/>
     ConstructorInfo? GetConstructor(Type instanceType);
+
+    /// <inheritdoc cref="IKeyedServiceProvider.GetKeyedService(Type, object?)"/>
+    object GetKeyedService(Type serviceType, object? serviceKey, IScope scope);
+
+    /// <inheritdoc cref="IKeyedServiceProvider.GetOptionalKeyedService(Type, object?)"/>
+    object? GetOptionalKeyedService(Type serviceType, object? serviceKey, IScope scope);
+
+    /// <inheritdoc cref="IKeyedServiceProvider.GetKeyedService{T}(object?)"/>
+    T GetKeyedService<T>(object? serviceKey, IScope scope);
+
+    /// <inheritdoc cref="IKeyedServiceProvider.GetOptionalKeyedService(Type, object?)"/>
+    T? GetOptionalKeyedService<T>(object? serviceKey, IScope scope);
 }

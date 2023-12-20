@@ -1,17 +1,14 @@
-﻿using System;
-using System.Reflection;
-using Snowberry.DependencyInjection.Attributes;
-using Snowberry.DependencyInjection.Exceptions;
-using Snowberry.DependencyInjection.Helper;
+﻿using Snowberry.DependencyInjection.Helper;
+using Snowberry.DependencyInjection.Implementation;
 using Snowberry.DependencyInjection.Interfaces;
 using Snowberry.DependencyInjection.Lookup.Cache;
 
 namespace Snowberry.DependencyInjection.Lookup;
 
-public class DefaultServiceFactory : IScopedServiceFactory
+public partial class DefaultServiceFactory : IScopedServiceFactory
 {
     private object _lock = new();
-    private List<IScopeServiceCacheEntry> _scopeCache = new();
+    private List<IScopeServiceCacheEntry> _scopeCache = [];
 
     public DefaultServiceFactory(IServiceDescriptorReceiver serviceDescriptorReceiver)
     {
@@ -46,13 +43,12 @@ public class DefaultServiceFactory : IScopedServiceFactory
     /// Tries to resolve the <paramref name="serviceType"/> instance for the given <paramref name="scope"/> and it will create and register a new one if it does not exist.
     /// </summary>
     /// <param name="scope">The current scope.</param>
-    /// <param name="serviceType">The service type.</param>
-    /// <param name="implementationType">The implementation of the service type.</param>
+    /// <param name="serviceDescriptor">The service descriptor.</param>
+    /// <param name="serviceKey">The service key.</param>
     /// <returns>Either the existing instance for the <paramref name="serviceType"/> or a newly created one using the <paramref name="implementationType"/>.</returns>
-    private object LocateOrCreateScopeInstance(IScope? scope, Type serviceType, Type implementationType)
+    private object LocateOrCreateScopeInstance(IScope? scope, IServiceDescriptor serviceDescriptor, object? serviceKey)
     {
-        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
-        _ = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
+        var serviceIdentifier = new ServiceIdentifier(serviceDescriptor.ServiceType, serviceKey);
 
         lock (_lock)
         {
@@ -66,14 +62,14 @@ public class DefaultServiceFactory : IScopedServiceFactory
                 if (entry.Scope != scope)
                     continue;
 
-                if (entry.ServiceType != serviceType)
+                if (!entry.ServiceIdentifier.Equals(serviceIdentifier))
                     continue;
 
                 return entry.Instance;
             }
         }
 
-        object? scopedInstance = CreateInstance(implementationType, scope);
+        object? scopedInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
 
         if (scopedInstance is IDisposable scopedDisposable)
             if (scope != null)
@@ -83,7 +79,10 @@ public class DefaultServiceFactory : IScopedServiceFactory
 
         lock (_lock)
         {
-            _scopeCache.Add(new ScopeServiceCacheEntry(scope, serviceType, scopedInstance));
+            _scopeCache.Add(new ScopeServiceCacheEntry(
+                scope,
+                serviceIdentifier,
+                scopedInstance));
         }
 
         return scopedInstance;
@@ -95,97 +94,10 @@ public class DefaultServiceFactory : IScopedServiceFactory
             return;
 
         NotifyScopeDisposed(scope);
-
         scope.OnDispose -= Scope_OnDispose;
     }
 
-    /// <inheritdoc/>
-    public object CreateInstance(Type type)
-    {
-        _ = type ?? throw new ArgumentNullException(nameof(type));
-
-        return CreateInstance(type, null);
-    }
-
-    /// <inheritdoc/>
-    public T CreateInstance<T>()
-    {
-        return CreateInstance<T>(null);
-    }
-
-    /// <inheritdoc/>
-    public ConstructorInfo? GetConstructor(Type instanceType)
-    {
-        var constructors = instanceType.GetConstructors();
-
-        if (constructors.Length == 1)
-            return constructors[0];
-
-        // Check for preferred constructor.
-        for (int i = 0; i < constructors.Length; i++)
-        {
-            var constructor = constructors[i];
-
-            if (constructor.GetCustomAttribute<PreferredConstructorAttribute>() != null)
-                return constructor;
-        }
-
-        // Otherwise get the constructor with the largest number of parameters.
-        return constructors
-            .OrderByDescending(c => c.GetParameters().Length)
-            .FirstOrDefault();
-    }
-
-    /// <inheritdoc/>
-    public object CreateInstance(Type type, IScope? scope)
-    {
-        _ = type ?? throw new ArgumentNullException(nameof(type));
-
-        if (type.IsInterface || type.IsAbstract)
-            throw new InvalidServiceImplementationType(type, $"Cannot instantiate abstract classes or interfaces! ({type.FullName})!");
-
-        var constructor = GetConstructor(type);
-
-        if (constructor == null)
-        {
-            if (type.IsValueType)
-                return CreateBuiltInType(type);
-        }
-        else
-        {
-            object[] args = constructor.GetParameters()
-                .Select(param => GetInstanceFromServiceType(param.ParameterType, scope))
-                .ToArray();
-
-            object? instance = constructor.Invoke(args);
-
-            var properties = type.GetProperties()
-                .Where(x => x.SetMethod != null);
-
-            foreach (var property in properties)
-            {
-                var injectAttribute = property.GetCustomAttribute<InjectAttribute>();
-
-                if (injectAttribute == null)
-                    continue;
-
-                object? propertyValue = GetOptionalService(property.PropertyType, scope);
-
-                if (injectAttribute.IsRequired && propertyValue is null)
-                    throw new ServiceTypeNotRegistered(property.PropertyType, $"The required service for the property `{property.Name}` is not registered!");
-
-                property.SetValue(instance, propertyValue);
-            }
-
-            return instance;
-        }
-
-        ThrowHelper.ThrowInvalidConstructor(type);
-        return null!;
-
-    }
-
-    protected object GetInstanceFromServiceType(Type serviceType, IScope? scope)
+    protected object GetInstanceFromServiceType(Type serviceType, IScope? scope, object? serviceKey)
     {
         _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
 
@@ -193,8 +105,8 @@ public class DefaultServiceFactory : IScopedServiceFactory
         if (serviceType.IsValueType && typeCode is not TypeCode.Empty and not TypeCode.Object)
             return CreateBuiltInType(serviceType);
 
-        var descriptor = ServiceDescriptorReceiver.GetServiceDescriptor(serviceType);
-        return GetInstanceFromDescriptor(descriptor, scope);
+        var descriptor = ServiceDescriptorReceiver.GetServiceDescriptor(serviceType, serviceKey);
+        return GetInstanceFromDescriptor(descriptor, scope, serviceKey);
     }
 
     protected object CreateBuiltInType(Type type)
@@ -224,7 +136,7 @@ public class DefaultServiceFactory : IScopedServiceFactory
         };
     }
 
-    protected object GetInstanceFromDescriptor(IServiceDescriptor serviceDescriptor, IScope? scope)
+    protected object GetInstanceFromDescriptor(IServiceDescriptor serviceDescriptor, IScope? scope, object? serviceKey)
     {
         _ = serviceDescriptor ?? throw new ArgumentNullException(nameof(serviceDescriptor));
 
@@ -232,7 +144,7 @@ public class DefaultServiceFactory : IScopedServiceFactory
         {
             case ServiceLifetime.Singleton:
 
-                // Only dispose the singleton if no explicit instance has been registered before.
+                // NOTE(VNC): Only register the disposable of the singleton if no explicit instance has been set before.
                 if (serviceDescriptor.SingletonInstance == null)
                 {
                     serviceDescriptor.SingletonInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
@@ -259,7 +171,7 @@ public class DefaultServiceFactory : IScopedServiceFactory
 
             case ServiceLifetime.Scoped:
                 {
-                    return LocateOrCreateScopeInstance(scope, serviceDescriptor.ServiceType, serviceDescriptor.ImplementationType);
+                    return LocateOrCreateScopeInstance(scope, serviceDescriptor, serviceKey);
                 }
 
             default:
@@ -268,53 +180,9 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
-    public T CreateInstance<T>(IScope? scope)
-    {
-        object service = CreateInstance(typeof(T), scope)!;
-
-        if (service is T type)
-            return type;
-
-        ThrowHelper.ThrowInvalidServiceImplementationCast(typeof(T), service.GetType());
-        return default!;
-    }
-
-    /// <inheritdoc/>
-    public object? GetOptionalService(Type serviceType)
-    {
-        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
-
-        return GetOptionalService(serviceType, null);
-    }
-
-    /// <inheritdoc/>
     public T? GetOptionalService<T>()
     {
         return GetOptionalService<T>(null);
-    }
-
-    /// <inheritdoc/>
-    public object? GetOptionalService(Type serviceType, IScope? scope)
-    {
-        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
-
-        var descriptor = ServiceDescriptorReceiver.GetOptionalServiceDescriptor(serviceType);
-
-        if (descriptor == null)
-            return null;
-
-        return GetInstanceFromDescriptor(descriptor, scope);
-    }
-
-    /// <inheritdoc/>
-    public T? GetOptionalService<T>(IScope? scope)
-    {
-        object? service = GetOptionalService(typeof(T), scope)!;
-
-        if (service is T type)
-            return type;
-
-        return default;
     }
 
     /// <inheritdoc/>
@@ -332,25 +200,39 @@ public class DefaultServiceFactory : IScopedServiceFactory
     }
 
     /// <inheritdoc/>
-    public object GetService(Type serviceType, IScope? scope)
+    public object? GetOptionalService(Type serviceType)
     {
         _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
 
-        object? service = GetOptionalService(serviceType, scope);
-
-        return service ?? throw new ServiceTypeNotRegistered(serviceType);
+        return GetOptionalService(serviceType, null);
     }
 
     /// <inheritdoc/>
-    public T GetService<T>(IScope? scope)
+    public object GetKeyedService(Type serviceType, object? serviceKey)
     {
-        object service = GetService(typeof(T), scope)!;
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
 
-        if (service is T type)
-            return type;
+        return GetKeyedService(serviceType, serviceKey, null);
+    }
 
-        ThrowHelper.ThrowInvalidServiceImplementationCast(typeof(T), service.GetType());
-        return default!;
+    /// <inheritdoc/>
+    public object? GetOptionalKeyedService(Type serviceType, object? serviceKey)
+    {
+        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
+
+        return GetOptionalKeyedService(serviceType, serviceKey, null);
+    }
+
+    /// <inheritdoc/>
+    public T GetKeyedService<T>(object? serviceKey)
+    {
+        return GetKeyedService<T>(serviceKey, null);
+    }
+
+    /// <inheritdoc/>
+    public T? GetOptionalKeyedService<T>(object? serviceKey)
+    {
+        return GetOptionalKeyedService<T>(serviceKey, null);
     }
 
     /// <summary>
