@@ -49,10 +49,12 @@ var serviceContainer = new ServiceContainer();
 
 serviceContainer.RegisterScoped<IScopedType, ScopedType>();
 serviceContainer.RegisterTransient<ITransientType, TransientType>();
+serviceContainer.RegisterTransient<ITestService, TestServiceKeyedA>("_KEY0_");
 
 // The current scope in this case would be the container itself, means it will be disposed by the container.
 _ = serviceContainer.GetService<IScopedType>();
 _ = serviceContainer.GetService<ITransientType>();
+_ = serviceContainer.GetKeyedService<ITestService>("_KEY0_");
 
 using(var scope = serviceContainer.CreateScope())
 {
@@ -65,9 +67,33 @@ using(var scope = serviceContainer.CreateScope())
 serviceContainer.Dispose();
 ```
 
-## Preferred constructor
+## Attributes
+
+### PreferredConstructorAttribute
 
 The `PreferredConstructorAttribute` attribute can be used to explicitly prefer a constructor. The attribute should be used only once.
+
+## FromKeyedServicesAttribute
+
+The `FromKeyedServicesAttribute` attribute can be used to explicitly use a service from a keyed service collection. 
+
+- The attribute can't be used multiple times.
+- The attribute can only be used on properties and parameters and is inherited.
+
+### InjectAttribute
+
+The `InjectAttribute` attribute can be used to explicitly inject a service into a property. 
+
+- The attribute can't be used multiple times. 
+- The attribute can only be used on properties and is inherited.
+
+The attribute can also be combined with the `FromKeyedServicesAttribute` attribute.
+
+```cs
+[Inject]
+[FromKeyedServices("_KEY1_")]
+public ITestService? KeyedPropertyInjectTestService { get; set; }
+```
 
 ## Service lifetime
 
