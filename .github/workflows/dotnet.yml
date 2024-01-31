@@ -28,7 +28,7 @@ jobs:
       - name: Build
         run: dotnet build --no-restore
       - name: Test
-        run: dotnet test --no-build --verbosity normal
+        run: dotnet test -f net8.0 --no-build --verbosity normal
 
   deploy:
     runs-on: ubuntu-latest
