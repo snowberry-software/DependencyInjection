@@ -71,11 +71,22 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
 
         object? scopedInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
 
-        if (scopedInstance is IDisposable scopedDisposable)
+        bool isAsyncDisposable = false;
+        bool isDisposable = false;
+
+        if (scopedInstance is IDisposable)
+            isDisposable = true;
+
+#if NETCOREAPP
+        if (!isDisposable && scopedInstance is IAsyncDisposable)
+            isAsyncDisposable = true;
+#endif
+
+        if (isDisposable || isAsyncDisposable)
             if (scope != null)
-                scope.RegisterDisposable(scopedDisposable);
+                scope.RegisterDisposable(scopedInstance);
             else
-                ServiceDescriptorReceiver.RegisterDisposable(scopedDisposable);
+                ServiceDescriptorReceiver.RegisterDisposable(scopedInstance);
 
         lock (_lock)
         {
