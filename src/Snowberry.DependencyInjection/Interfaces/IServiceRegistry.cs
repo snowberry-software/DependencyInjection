@@ -95,7 +95,7 @@ public interface IServiceRegistry
     /// <summary>
     /// Unregisters a registered service of the type <typeparamref name="T"/>.
     /// </summary>
-    /// <remarks>All disposeable instances from <typeparamref name="T"/> will be disposed as usual, except if it is a service with the lifetime of a <see cref="ServiceLifetime.Singleton"/>.
+    /// <remarks>All disposable instances from <typeparamref name="T"/> will be disposed as usual, except if it is a service with the lifetime of a <see cref="ServiceLifetime.Singleton"/>.
     /// <para/>
     /// A singleton service will be disposed directly within the unregister method.
     /// </remarks>
@@ -109,7 +109,7 @@ public interface IServiceRegistry
     /// Unregisters a registered service of the type <paramref name="serviceType"/>.
     /// </summary>
     /// <remarks>
-    /// All disposeable instances from <paramref name="serviceType"/> will be disposed as usual, except if it is a service with the lifetime of a <see cref="ServiceLifetime.Singleton"/>.
+    /// All disposable instances from <paramref name="serviceType"/> will be disposed as usual, except if it is a service with the lifetime of a <see cref="ServiceLifetime.Singleton"/>.
     /// <para/>
     /// A singleton service will be disposed directly within the unregister method.
     /// </remarks>

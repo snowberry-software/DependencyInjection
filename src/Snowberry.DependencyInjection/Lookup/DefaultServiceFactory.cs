@@ -128,11 +128,11 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
             TypeCode.Int64 => (long)0,
             TypeCode.SByte => (sbyte)0,
             TypeCode.Single => 0F,
-            TypeCode.String => "",
+            TypeCode.String => string.Empty,
             TypeCode.UInt16 => (ushort)0,
             TypeCode.UInt32 => (uint)0,
             TypeCode.UInt64 => (ulong)0,
-            _ => Activator.CreateInstance(type)
+            _ => Activator.CreateInstance(type)!
         };
     }
 

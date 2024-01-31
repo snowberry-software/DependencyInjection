@@ -9,7 +9,7 @@ public class Scope : IScope
 
     private bool _isDisposed;
     private readonly object _lock = new();
-    private List<IDisposable>? _disposables;
+    private DisposableContainer _disposableContainer = new();
 
     /// <summary>
     /// Creates a new scope.
@@ -21,33 +21,79 @@ public class Scope : IScope
     }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
-    /// <inheritdoc/>
-    public void Dispose()
+    /// <summary>
+    /// Disposes the core.
+    /// </summary>
+    /// <returns>Whether the core is already disposed.</returns>
+    private bool DisposeCore()
     {
         lock (_lock)
         {
-            if (_isDisposed)
-                return;
+            if (IsDisposed)
+                return true;
 
             _isDisposed = true;
-
-            if (_disposables == null)
-                return;
-
-            for (int i = _disposables.Count - 1; i >= 0; i--)
-            {
-                var disposable = _disposables[i];
-                disposable.Dispose();
-            }
-
-            _disposables.Clear();
-
-            OnDispose?.Invoke(this, EventArgs.Empty);
+            return false;
         }
     }
 
     /// <inheritdoc/>
+    public void Dispose()
+    {
+        GC.SuppressFinalize(this);
+
+        lock (_lock)
+        {
+            if (DisposeCore())
+                return;
+
+            try
+            {
+                _disposableContainer.Dispose();
+            }
+            finally
+            {
+                OnDispose?.Invoke(this, EventArgs.Empty);
+            }
+        }
+    }
+
+#if NETCOREAPP
+    /// <inheritdoc/>
+    public async ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+
+        if (DisposeCore())
+            return;
+
+        try
+        {
+            await _disposableContainer.DisposeAsync();
+        }
+        finally
+        {
+            OnDispose?.Invoke(this, EventArgs.Empty);
+        }
+    }
+#endif
+
+    /// <inheritdoc/>
     public void RegisterDisposable(IDisposable disposable)
+    {
+        RegisterDisposable((object)disposable);
+    }
+
+#if NETCOREAPP
+    /// <inheritdoc/>
+    public void RegisterDisposable(IAsyncDisposable disposable)
+    {
+        RegisterDisposable((object)disposable);
+    }
+#endif
+
+    /// <inheritdoc/>
+    public void RegisterDisposable(object disposable)
     {
         _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
 
@@ -56,13 +102,7 @@ public class Scope : IScope
             if (IsDisposed)
                 throw new ObjectDisposedException(nameof(Scope));
 
-            if (_disposables == null)
-            {
-                _disposables = [disposable];
-                return;
-            }
-
-            _disposables.Add(disposable);
+            _disposableContainer.RegisterDisposable(disposable);
         }
     }
 
@@ -85,12 +125,12 @@ public class Scope : IScope
     public bool IsDisposed => _isDisposed;
 
     /// <inheritdoc/>
-    public int DisposeableCount
+    public int DisposableCount
     {
         get
         {
             lock (_lock)
-                return _disposables?.Count ?? 0;
+                return _disposableContainer.DisposableCount;
         }
     }
 }

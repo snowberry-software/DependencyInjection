@@ -10,9 +10,9 @@ namespace Snowberry.DependencyInjection;
 public partial class ServiceContainer : IServiceContainer
 {
     private ConcurrentDictionary<IServiceIdentifier, IServiceDescriptor> _serviceDescriptorMapping = [];
-    private List<IDisposable>? _disposables;
     private readonly object _lock = new();
     private bool _isDisposed;
+    private DisposableContainer _disposableContainer = new();
 
     /// <summary>
     /// Creates a container with the default options.
@@ -45,7 +45,23 @@ public partial class ServiceContainer : IServiceContainer
     /// </summary>
     protected virtual void AddDefaultServices()
     {
+    }
 
+    /// <summary>
+    /// Disposes the core.
+    /// </summary>
+    /// <returns>Whether the core is already disposed.</returns>
+    private bool DisposeCore()
+    {
+        lock (_lock)
+        {
+            if (IsDisposed)
+                return true;
+
+            _isDisposed = true;
+            ServiceFactory.NotifyScopeDisposed(null);
+            return false;
+        }
     }
 
     /// <inheritdoc/>
@@ -53,39 +69,47 @@ public partial class ServiceContainer : IServiceContainer
     {
         lock (_lock)
         {
-            if (IsDisposed)
+            if (DisposeCore())
                 return;
 
-            _isDisposed = true;
-            ServiceFactory.NotifyScopeDisposed(null);
-
-            if (_disposables == null)
-                return;
-
-            for (int i = _disposables.Count - 1; i >= 0; i--)
-            {
-                var disposable = _disposables[i];
-                disposable.Dispose();
-            }
-
-            _disposables.Clear();
+            _disposableContainer.Dispose();
         }
     }
 
+#if NETCOREAPP
+    /// <inheritdoc/>
+    public ValueTask DisposeAsync()
+    {
+        DisposeCore();
+        return _disposableContainer.DisposeAsync();
+    }
+#endif
+
     /// <inheritdoc/>
     public void RegisterDisposable(IDisposable disposable)
+    {
+        RegisterDisposable((object)disposable);
+    }
+
+#if NETCOREAPP
+    /// <inheritdoc/>
+    public void RegisterDisposable(IAsyncDisposable disposable)
+    {
+        RegisterDisposable((object)disposable);
+    }
+#endif
+
+    /// <inheritdoc/>
+    public void RegisterDisposable(object disposable)
     {
         _ = disposable ?? throw new ArgumentNullException(nameof(disposable));
 
         lock (_lock)
         {
-            if (_disposables == null)
-            {
-                _disposables = [disposable];
-                return;
-            }
+            if (IsDisposed)
+                throw new ObjectDisposedException(nameof(ServiceContainer));
 
-            _disposables.Add(disposable);
+            _disposableContainer.RegisterDisposable(disposable);
         }
     }
 
@@ -263,13 +287,13 @@ public partial class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public int DisposeableCount
+    public int DisposableCount
     {
         get
         {
             lock (_lock)
             {
-                return _disposables?.Count ?? 0;
+                return _disposableContainer.DisposableCount;
             }
         }
     }
