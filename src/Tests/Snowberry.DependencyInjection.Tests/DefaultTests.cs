@@ -24,7 +24,7 @@ public class DefaultTests
             Name = "2"
         });
 
-        Assert.Equal(0, serviceContainer.DisposeableCount);
+        Assert.Equal(0, serviceContainer.DisposableCount);
         Assert.Equal("2", serviceContainer.GetService<ITestService>().Name);
         Assert.Equal(1, serviceContainer.Count);
     }
@@ -66,7 +66,7 @@ public class DefaultTests
         serviceContainer.RegisterSingleton<ITestService, TestService>();
 
         Assert.NotNull(serviceContainer.GetOptionalService<ITestService>());
-        Assert.Equal(1, serviceContainer.DisposeableCount);
+        Assert.Equal(1, serviceContainer.DisposableCount);
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class DefaultTests
 
         Assert.Equal(anotherService.TestService, anotherService.TestServiceSame);
 
-        Assert.Equal(1, serviceContainer.DisposeableCount);
+        Assert.Equal(1, serviceContainer.DisposableCount);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class DefaultTests
 
         Assert.Throws<ServiceTypeNotRegistered>(serviceContainer.GetService<ITestAnotherService>);
 
-        Assert.Equal(0, serviceContainer.DisposeableCount);
+        Assert.Equal(0, serviceContainer.DisposableCount);
     }
 
     [Fact]
@@ -106,7 +106,7 @@ public class DefaultTests
 
         Assert.Throws<ServiceTypeNotRegistered>(serviceContainer.GetService<ITestAnotherService>);
 
-        Assert.Equal(0, serviceContainer.DisposeableCount);
+        Assert.Equal(0, serviceContainer.DisposableCount);
     }
 
     [Fact]
@@ -118,11 +118,11 @@ public class DefaultTests
         var service = serviceContainer.GetService<ITestAnotherService>();
         Assert.Null(service.TestService);
 
-        Assert.Equal(0, serviceContainer.DisposeableCount);
+        Assert.Equal(0, serviceContainer.DisposableCount);
     }
 
     [Fact]
-    public void DisposeableMustBeDisposed()
+    public void DisposableMustBeDisposed()
     {
         ITestService disposable;
         using (var serviceContainer = new ServiceContainer())
@@ -131,14 +131,14 @@ public class DefaultTests
 
             disposable = serviceContainer.GetService<ITestService>();
 
-            Assert.Equal(1, serviceContainer.DisposeableCount);
+            Assert.Equal(1, serviceContainer.DisposableCount);
         }
 
         Assert.True(disposable.IsDisposed);
     }
 
     [Fact]
-    public void DisposeableThatCantBeDisposed()
+    public void DisposableThatCantBeDisposed()
     {
         // The user provided the instance which means that the instance will not be disposed by the service container.
 
@@ -147,7 +147,7 @@ public class DefaultTests
         {
             serviceContainer.RegisterSingleton<ITestService, TestService>((TestService)disposable);
 
-            Assert.Equal(0, serviceContainer.DisposeableCount);
+            Assert.Equal(0, serviceContainer.DisposableCount);
 
             disposable = serviceContainer.GetService<ITestService>();
         }
@@ -158,7 +158,7 @@ public class DefaultTests
     [Fact]
     public void ContainerAlreadyDisposed()
     {
-        IServiceContainer serviceContainer;
+        ServiceContainer serviceContainer;
         using (serviceContainer = new ServiceContainer())
         {
         }

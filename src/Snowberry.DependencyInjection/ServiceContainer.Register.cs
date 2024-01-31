@@ -214,7 +214,7 @@ public partial class ServiceContainer
             {
                 if (serviceDescriptor.Lifetime is ServiceLifetime.Singleton && serviceDescriptor.SingletonInstance is IDisposable disposableSingleton)
                 {
-                    _disposables?.Remove(disposableSingleton);
+                    _disposableContainer.Remove(disposableSingleton);
                     disposableSingleton.Dispose();
                 }
 

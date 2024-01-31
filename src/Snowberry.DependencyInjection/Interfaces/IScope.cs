@@ -3,7 +3,7 @@ namespace Snowberry.DependencyInjection.Interfaces;
 /// <summary>
 /// Defines a scope for services.
 /// </summary>
-public interface IScope : IDisposeableContainer, IDisposable
+public interface IScope : IDisposableContainer, IDisposable
 {
     /// <summary>
     /// Gets called when the scope gets disposed.

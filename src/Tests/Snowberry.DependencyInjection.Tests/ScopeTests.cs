@@ -17,44 +17,48 @@ public class ScopeTests
         {
             service = scope.ServiceFactory.GetService<ITestService>();
 
-            Assert.Equal(1, scope.DisposeableCount);
+            Assert.Equal(1, scope.DisposableCount);
 
             Assert.Equal(service, scope.ServiceFactory.GetService<ITestService>());
             Assert.Equal(service, scope.ServiceFactory.GetOptionalService<ITestService>());
         }
 
-        Assert.Equal(0, serviceContainer.DisposeableCount);
+        Assert.Equal(0, serviceContainer.DisposableCount);
         Assert.True(service.IsDisposed);
     }
 
     [Fact]
     public void GlobalScope()
     {
+        ITestService globalTestService;
+        ITestService scopedTestService;
+
         IServiceContainer serviceContainer;
         IScope scope;
         using (serviceContainer = new ServiceContainer())
         {
             serviceContainer.RegisterScoped<ITestService, TestService>();
 
-            var globalService = serviceContainer.GetService<ITestService>();
+            globalTestService = serviceContainer.GetService<ITestService>();
 
-            ITestService scopedService;
             using (scope = serviceContainer.CreateScope())
             {
-                scopedService = scope.ServiceFactory.GetService<ITestService>();
+                scopedTestService = scope.ServiceFactory.GetService<ITestService>();
 
-                Assert.Equal(1, scope.DisposeableCount);
-                Assert.Equal(scopedService, scope.ServiceFactory.GetService<ITestService>());
+                Assert.Equal(1, scope.DisposableCount);
+                Assert.Equal(scopedTestService, scope.ServiceFactory.GetService<ITestService>());
             }
+            Assert.NotEqual(globalTestService, scopedTestService);
+            Assert.True(scopedTestService.IsDisposed);
 
-            Assert.NotEqual(globalService, scopedService);
-
-            Assert.Equal(1, serviceContainer.DisposeableCount);
-            Assert.True(scopedService.IsDisposed);
+            Assert.Equal(1, scope.DisposableCount);
+            Assert.Equal(1, serviceContainer.DisposableCount);
         }
 
-        Assert.Equal(0, serviceContainer.DisposeableCount);
-        Assert.Equal(0, scope.DisposeableCount);
+        Assert.Equal(1, serviceContainer.DisposableCount);
+        Assert.Equal(1, scope.DisposableCount);
+        Assert.True(scope.IsDisposed);
+        Assert.True(serviceContainer.IsDisposed);
     }
 
     [Fact]
