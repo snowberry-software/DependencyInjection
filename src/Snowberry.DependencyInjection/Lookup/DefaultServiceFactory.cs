@@ -71,18 +71,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
 
         object? scopedInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
 
-        bool isAsyncDisposable = false;
-        bool isDisposable = false;
-
-        if (scopedInstance is IDisposable)
-            isDisposable = true;
-
-#if NETCOREAPP
-        if (!isDisposable && scopedInstance is IAsyncDisposable)
-            isAsyncDisposable = true;
-#endif
-
-        if (isDisposable || isAsyncDisposable)
+        if (scopedInstance.IsDisposable())
             if (scope != null)
                 scope.RegisterDisposable(scopedInstance);
             else
@@ -160,8 +149,8 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
                 {
                     serviceDescriptor.SingletonInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
 
-                    if (serviceDescriptor.SingletonInstance is IDisposable singletonDisposable)
-                        ServiceDescriptorReceiver.RegisterDisposable(singletonDisposable);
+                    if (serviceDescriptor.SingletonInstance.IsDisposable())
+                        ServiceDescriptorReceiver.RegisterDisposable(serviceDescriptor.SingletonInstance);
                 }
 
                 return serviceDescriptor.SingletonInstance;
@@ -170,12 +159,12 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
 
                 object? transientInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
 
-                if (transientInstance is IDisposable transientDisposable)
+                if (transientInstance.IsDisposable())
                 {
                     if (scope != null)
-                        scope.RegisterDisposable(transientDisposable);
+                        scope.RegisterDisposable(transientInstance);
                     else
-                        ServiceDescriptorReceiver.RegisterDisposable(transientDisposable);
+                        ServiceDescriptorReceiver.RegisterDisposable(transientInstance);
                 }
 
                 return transientInstance;
