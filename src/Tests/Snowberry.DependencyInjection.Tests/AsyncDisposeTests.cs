@@ -39,6 +39,7 @@ public class AsyncDisposeTests
         {
             serviceContainer.RegisterScoped<ITestService, TestAsyncService>();
             serviceContainer.RegisterScoped<ITestService, TestAsyncService>("scopedKey");
+            serviceContainer.RegisterScoped<ITestService, TestService>("defaultDispose");
 
             testService = serviceContainer.GetService<ITestService>();
             testService.Name = "Test";
@@ -51,9 +52,13 @@ public class AsyncDisposeTests
             Assert.NotEqual(testServiceScoped, testServiceScopedKey);
             Assert.NotEqual(testServiceScoped.Name, testServiceScopedKey.Name);
 
-            Assert.Equal(2, scope.DisposableCount);
+            var defaultDisposeService = scope.ServiceFactory.GetKeyedService<ITestService>("defaultDispose");
+
+            Assert.Equal(3, scope.DisposableCount);
             await scope.DisposeAsync();
+            
             Assert.True(testServiceScopedKey.IsDisposed);
+            Assert.True(defaultDisposeService.IsDisposed);
         }
         Assert.Equal(1, serviceContainer.DisposableCount);
         await serviceContainer.DisposeAsync();
