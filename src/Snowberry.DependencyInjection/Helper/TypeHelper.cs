@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Snowberry.DependencyInjection.Helper;
+﻿namespace Snowberry.DependencyInjection.Helper;
 
 /// <summary>
 /// Extension methods for instances and types.

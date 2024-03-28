@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Snowberry.DependencyInjection.Tests.Services.AsyncDisposeTestServices;
+﻿namespace Snowberry.DependencyInjection.Tests.Services.AsyncDisposeTestServices;
 
 internal class TestAsyncService : ITestService
 #if NETCOREAPP

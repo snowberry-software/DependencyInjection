@@ -48,6 +48,7 @@ public class ScopeTests
                 Assert.Equal(1, scope.DisposableCount);
                 Assert.Equal(scopedTestService, scope.ServiceFactory.GetService<ITestService>());
             }
+
             Assert.NotEqual(globalTestService, scopedTestService);
             Assert.True(scopedTestService.IsDisposed);
 

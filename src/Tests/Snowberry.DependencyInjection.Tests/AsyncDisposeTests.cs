@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-using Snowberry.DependencyInjection.Tests.Services;
+﻿using Snowberry.DependencyInjection.Tests.Services;
 using Snowberry.DependencyInjection.Tests.Services.AsyncDisposeTestServices;
 using Xunit;
 
@@ -24,6 +18,7 @@ public class AsyncDisposeTests
             testService = serviceContainer.GetService<ITestService>();
             testService.Name = "Test";
         }
+
         await serviceContainer.DisposeAsync();
 
         Assert.Equal("Test", testService.Name);
@@ -63,6 +58,7 @@ public class AsyncDisposeTests
             Assert.True(defaultDisposeService.IsDisposed);
             Assert.True(anotherService.IsDisposed);
         }
+
         Assert.Equal(1, serviceContainer.DisposableCount);
         await serviceContainer.DisposeAsync();
 
