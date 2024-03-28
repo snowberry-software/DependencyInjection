@@ -46,11 +46,6 @@ public class ServiceDescriptor : IServiceDescriptor
     /// <inheritdoc/>
     public Type ImplementationType { get; }
 
-    /// <summary>
-    /// The optional service key.
-    /// </summary>
-    public object? ServiceKey { get; }
-
     /// <inheritdoc/>
     public ServiceLifetime Lifetime { get; }
 }

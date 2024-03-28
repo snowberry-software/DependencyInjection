@@ -115,7 +115,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
         return typeCode switch
         {
             TypeCode.Empty => throw new NotImplementedException(),
-            TypeCode.Object => throw new NotImplementedException(),
+            TypeCode.Object => new object(),
             TypeCode.Boolean => false,
             TypeCode.Byte => (byte)0,
             TypeCode.Char => (char)0,

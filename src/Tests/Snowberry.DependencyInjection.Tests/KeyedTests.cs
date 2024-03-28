@@ -20,6 +20,8 @@ public class KeyedTests
         }, "_KEY_");
 
         Assert.Equal("2", serviceContainer.GetKeyedService<ITestService>("_KEY_").Name);
+        Assert.Equal(2, serviceContainer.Count);
+        Assert.Equal(2, serviceContainer.GetServiceDescriptors().Length);
     }
 
     [Fact]

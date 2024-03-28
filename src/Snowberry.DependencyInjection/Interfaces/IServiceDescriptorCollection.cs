@@ -36,4 +36,15 @@ public interface IServiceDescriptorReceiver : IDisposableContainer
     /// <param name="serviceKey">The optional service key.</param>
     /// <returns>The optional service descriptor for the specified type.</returns>
     IServiceDescriptor? GetOptionalServiceDescriptor<T>(object? serviceKey);
+
+    /// <summary>
+    /// Returns the collection of registered service descriptors.
+    /// </summary>
+    /// <returns>The collection.</returns>
+    IServiceDescriptor[] GetServiceDescriptors();
+
+    /// <summary>
+    /// Gets the amount of registered service descriptor.
+    /// </summary>
+    int Count { get; }
 }

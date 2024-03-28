@@ -134,9 +134,4 @@ public interface IServiceRegistry
     /// <typeparam name="T">The type of the service.</param>
     /// <returns>Whether the given <typeparamref name="T"/> is registered or not.</returns>
     bool IsServiceRegistered<T>(object? serviceKey);
-
-    /// <summary>
-    /// Gets the amount of registered services.
-    /// </summary>
-    int Count { get; }
 }

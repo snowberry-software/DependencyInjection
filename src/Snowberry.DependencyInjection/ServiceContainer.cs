@@ -275,6 +275,15 @@ public partial class ServiceContainer : IServiceContainer
     public IScopedServiceFactory ServiceFactory { get; }
 
     /// <inheritdoc/>
+    public IServiceDescriptor[] GetServiceDescriptors()
+    {
+        lock (_lock)
+        {
+            return [.. _serviceDescriptorMapping.Values];
+        }
+    }
+
+    /// <inheritdoc/>
     public int Count
     {
         get
