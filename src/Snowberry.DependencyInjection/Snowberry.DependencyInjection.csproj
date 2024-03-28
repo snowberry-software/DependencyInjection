@@ -19,7 +19,7 @@
 
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <IncludeBuildOutput>true</IncludeBuildOutput>
-        <Copyright>Copyright © 2023 Snowberry Software</Copyright>
+        <Copyright>Copyright © 2024 Snowberry Software</Copyright>
         <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
         <PackageProjectUrl>https://github.com/snowberry-software/DependencyInjection</PackageProjectUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
