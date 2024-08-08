@@ -6,11 +6,13 @@ namespace Snowberry.DependencyInjection.Tests;
 
 public class ScopeTests
 {
-    [Fact]
-    public void ScopeDispose()
+    [Theory]
+    [InlineData(ServiceLifetime.Scoped)]
+    [InlineData(ServiceLifetime.Transient)]
+    public void ScopeDispose(ServiceLifetime serviceLifetime)
     {
         using var serviceContainer = new ServiceContainer();
-        serviceContainer.RegisterScoped<ITestService, TestService>();
+        serviceContainer.Register(typeof(ITestService), typeof(TestService), null, serviceLifetime, null);
 
         ITestService service;
         using (var scope = serviceContainer.CreateScope())
@@ -19,8 +21,16 @@ public class ScopeTests
 
             Assert.Equal(1, scope.DisposableCount);
 
-            Assert.Equal(service, scope.ServiceFactory.GetService<ITestService>());
-            Assert.Equal(service, scope.ServiceFactory.GetOptionalService<ITestService>());
+            if (serviceLifetime == ServiceLifetime.Scoped)
+            {
+                Assert.Equal(service, scope.ServiceFactory.GetService<ITestService>());
+                Assert.Equal(service, scope.ServiceFactory.GetOptionalService<ITestService>());
+            }
+            else
+            {
+                Assert.NotEqual(service, scope.ServiceFactory.GetService<ITestService>());
+                Assert.NotEqual(service, scope.ServiceFactory.GetOptionalService<ITestService>());
+            }
         }
 
         Assert.Equal(0, serviceContainer.DisposableCount);
