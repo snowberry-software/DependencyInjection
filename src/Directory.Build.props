@@ -1,0 +1,6 @@
+<Project>
+    <PropertyGroup>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Snowberry.DependencyInjection.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+</Project>
