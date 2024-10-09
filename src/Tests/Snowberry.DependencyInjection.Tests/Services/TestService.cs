@@ -1,4 +1,6 @@
-﻿namespace Snowberry.DependencyInjection.Tests.Services;
+﻿using Snowberry.DependencyInjection.Tests.Services.Interfaces;
+
+namespace Snowberry.DependencyInjection.Tests.Services;
 
 internal class TestService : ITestService, IDisposable
 {

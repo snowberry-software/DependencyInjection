@@ -20,15 +20,15 @@ public sealed class ScopeServiceFactory : IServiceFactory
     }
 
     /// <inheritdoc/>
-    public object CreateInstance(Type type)
+    public object CreateInstance(Type type, Type[]? genericTypeParameters = null)
     {
-        return ServiceFactory.CreateInstance(type, Scope);
+        return ServiceFactory.CreateInstance(type, Scope, genericTypeParameters);
     }
 
     /// <inheritdoc/>
-    public T CreateInstance<T>()
+    public T CreateInstance<T>(Type[]? genericTypeParameters = null)
     {
-        return ServiceFactory.CreateInstance<T>(Scope);
+        return ServiceFactory.CreateInstance<T>(Scope, genericTypeParameters);
     }
 
     /// <inheritdoc/>

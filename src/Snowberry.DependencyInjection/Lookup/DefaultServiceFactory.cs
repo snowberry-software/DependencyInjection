@@ -44,9 +44,10 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
     /// </summary>
     /// <param name="scope">The current scope.</param>
     /// <param name="serviceDescriptor">The service descriptor.</param>
+    /// <param name="requestedServiceType">The requested service type.</param>
     /// <param name="serviceKey">The service key.</param>
-    /// <returns>Either the existing instance for the <paramref name="serviceType"/> or a newly created one using the <paramref name="implementationType"/>.</returns>
-    private object LocateOrCreateScopeInstance(IScope? scope, IServiceDescriptor serviceDescriptor, object? serviceKey)
+    /// <returns>The instance for the <paramref name="requestedServiceType"/>.</returns>
+    private object LocateOrCreateScopeInstance(IScope? scope, IServiceDescriptor serviceDescriptor, Type requestedServiceType, object? serviceKey)
     {
         var serviceIdentifier = new ServiceIdentifier(serviceDescriptor.ServiceType, serviceKey);
 
@@ -69,7 +70,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
             }
         }
 
-        object? scopedInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
+        object? scopedInstance = CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
 
         if (scopedInstance.IsDisposable())
             if (scope != null)
@@ -106,7 +107,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
             return CreateBuiltInType(serviceType);
 
         var descriptor = ServiceDescriptorReceiver.GetServiceDescriptor(serviceType, serviceKey);
-        return GetInstanceFromDescriptor(descriptor, scope, serviceKey);
+        return GetInstanceFromDescriptor(descriptor, scope, serviceType, serviceKey);
     }
 
     protected object CreateBuiltInType(Type type)
@@ -136,7 +137,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
         };
     }
 
-    protected object GetInstanceFromDescriptor(IServiceDescriptor serviceDescriptor, IScope? scope, object? serviceKey)
+    protected object GetInstanceFromDescriptor(IServiceDescriptor serviceDescriptor, IScope? scope, Type requestedServiceType, object? serviceKey)
     {
         _ = serviceDescriptor ?? throw new ArgumentNullException(nameof(serviceDescriptor));
 
@@ -147,7 +148,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
                 // NOTE(VNC): Only register the disposable of the singleton if no explicit instance has been set before.
                 if (serviceDescriptor.SingletonInstance == null)
                 {
-                    serviceDescriptor.SingletonInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
+                    serviceDescriptor.SingletonInstance = CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
 
                     if (serviceDescriptor.SingletonInstance.IsDisposable())
                         ServiceDescriptorReceiver.RegisterDisposable(serviceDescriptor.SingletonInstance);
@@ -157,7 +158,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
 
             case ServiceLifetime.Transient:
 
-                object? transientInstance = CreateInstance(serviceDescriptor.ImplementationType, scope);
+                object? transientInstance = CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
 
                 if (transientInstance.IsDisposable())
                 {
@@ -171,7 +172,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
 
             case ServiceLifetime.Scoped:
                 {
-                    return LocateOrCreateScopeInstance(scope, serviceDescriptor, serviceKey);
+                    return LocateOrCreateScopeInstance(scope, serviceDescriptor, requestedServiceType, serviceKey);
                 }
 
             default:

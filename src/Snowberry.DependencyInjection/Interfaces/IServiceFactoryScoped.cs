@@ -32,11 +32,11 @@ public interface IServiceFactoryScoped
     /// <inheritdoc cref="IServiceFactory.GetOptionalService{T}()"/>
     T? GetOptionalService<T>(IScope scope);
 
-    /// <inheritdoc cref="IServiceFactory.CreateInstance(Type)"/>
-    object CreateInstance(Type type, IScope scope);
+    /// <inheritdoc cref="IServiceFactory.CreateInstance(Type, Type[]?)"/>
+    object CreateInstance(Type type, IScope scope, Type[]? genericTypeParameters = null);
 
-    /// <inheritdoc cref="IServiceFactory.CreateInstance{T}()"/>
-    T CreateInstance<T>(IScope scope);
+    /// <inheritdoc cref="IServiceFactory.CreateInstance{T}(Type[]?)"/>
+    T CreateInstance<T>(IScope scope, Type[]? genericTypeParameters = null);
 
     /// <inheritdoc cref="IServiceFactory.GetConstructor(Type)"/>
     ConstructorInfo? GetConstructor(Type instanceType);

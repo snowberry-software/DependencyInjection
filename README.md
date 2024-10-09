@@ -67,6 +67,12 @@ using(var scope = serviceContainer.CreateScope())
 serviceContainer.Dispose();
 ```
 
+## Open Generic Types
+
+```cs
+serviceContainer.Register(typeof(IOpenGenericService<>), typeof(OpenGenericService<>), serviceKey: null, lifetime: ServiceLifetime.Transient, singletonInstance: null);
+```
+
 ## Attributes
 
 ### PreferredConstructorAttribute

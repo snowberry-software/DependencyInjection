@@ -1,5 +1,6 @@
 ﻿using Snowberry.DependencyInjection.Exceptions;
 using Snowberry.DependencyInjection.Tests.Services;
+using Snowberry.DependencyInjection.Tests.Services.Interfaces;
 using Snowberry.DependencyInjection.Tests.Services.PropertyTestServices;
 using Xunit;
 

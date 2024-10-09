@@ -1,4 +1,6 @@
-﻿namespace Snowberry.DependencyInjection.Tests.Services.KeyedTestServices;
+﻿using Snowberry.DependencyInjection.Tests.Services.Interfaces;
+
+namespace Snowberry.DependencyInjection.Tests.Services.KeyedTestServices;
 
 public class TestServiceKeyedA : ITestService
 {

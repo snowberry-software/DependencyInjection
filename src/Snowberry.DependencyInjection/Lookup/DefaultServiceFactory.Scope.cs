@@ -9,47 +9,25 @@ public partial class DefaultServiceFactory
     /// <inheritdoc/>
     public object GetService(Type serviceType, IScope? scope)
     {
-        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
-
-        object? service = GetOptionalService(serviceType, scope);
-
-        return service ?? throw new ServiceTypeNotRegistered(serviceType);
+        return GetKeyedService(serviceType: serviceType, serviceKey: null, scope: scope);
     }
 
     /// <inheritdoc/>
     public object? GetOptionalService(Type serviceType, IScope? scope)
     {
-        _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
-
-        var descriptor = ServiceDescriptorReceiver.GetOptionalServiceDescriptor(serviceType, null);
-
-        if (descriptor == null)
-            return null;
-
-        return GetInstanceFromDescriptor(descriptor, scope, null);
+        return GetOptionalKeyedService(serviceType: serviceType, serviceKey: null, scope: scope);
     }
 
     /// <inheritdoc/>
     public T GetService<T>(IScope? scope)
     {
-        object service = GetService(typeof(T), scope)!;
-
-        if (service is T type)
-            return type;
-
-        ThrowHelper.ThrowInvalidServiceImplementationCast(typeof(T), service.GetType());
-        return default!;
+        return GetKeyedService<T>(serviceKey: null, scope: scope);
     }
 
     /// <inheritdoc/>
     public T? GetOptionalService<T>(IScope? scope)
     {
-        object? service = GetOptionalService(typeof(T), scope)!;
-
-        if (service is T type)
-            return type;
-
-        return default;
+        return GetOptionalKeyedService<T>(serviceKey: null, scope: scope);
     }
 
     /// <inheritdoc/>
@@ -72,7 +50,7 @@ public partial class DefaultServiceFactory
         if (descriptor == null)
             return null;
 
-        return GetInstanceFromDescriptor(descriptor, scope, serviceKey);
+        return GetInstanceFromDescriptor(descriptor, scope, serviceType, serviceKey);
     }
 
     /// <inheritdoc/>

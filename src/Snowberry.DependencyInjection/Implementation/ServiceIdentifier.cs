@@ -17,8 +17,11 @@ public readonly struct ServiceIdentifier : IServiceIdentifier
     }
 
     /// <inheritdoc/>
-    public bool Equals(IServiceIdentifier other)
+    public bool Equals(IServiceIdentifier? other)
     {
+        if (other == null)
+            return false;
+
         if (ServiceKey == null && other.ServiceKey == null)
             return ServiceType == other.ServiceType;
 

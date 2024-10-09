@@ -67,6 +67,8 @@ public partial class ServiceContainer : IServiceContainer
     /// <inheritdoc/>
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
+
         lock (_lock)
         {
             if (DisposeCore())
@@ -80,6 +82,8 @@ public partial class ServiceContainer : IServiceContainer
     /// <inheritdoc/>
     public ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
+
         DisposeCore();
         return _disposableContainer.DisposeAsync();
     }
@@ -125,9 +129,27 @@ public partial class ServiceContainer : IServiceContainer
 
             if (_serviceDescriptorMapping.TryGetValue(serviceIdentifier, out var serviceDescriptor))
                 return serviceDescriptor;
-        }
 
-        return null;
+            if (serviceType.GenericTypeArguments.Length == 0)
+                return null;
+
+            var genericType = serviceType.GetGenericTypeDefinition();
+            var genericServiceIdentifier = new ServiceIdentifier(genericType, serviceKey);
+
+            // NOTE(VNC):
+            //
+            // If we find the generic service, we can create a new service descriptor for the specific service type.
+            //
+            if (_serviceDescriptorMapping.TryGetValue(genericServiceIdentifier, out serviceDescriptor))
+            {
+                var newServiceDescriptor = serviceDescriptor.CloneFor(serviceType);
+                _serviceDescriptorMapping.AddOrUpdate(serviceIdentifier, newServiceDescriptor, (_, _) => newServiceDescriptor);
+
+                return newServiceDescriptor;
+            }
+
+            return null;
+        }
     }
 
     /// <inheritdoc/>
@@ -162,21 +184,21 @@ public partial class ServiceContainer : IServiceContainer
     }
 
     /// <inheritdoc/>
-    public object CreateInstance(Type type)
+    public object CreateInstance(Type type, Type[]? genericTypeParameters = null)
     {
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
-        return ServiceFactory.CreateInstance(type);
+        return ServiceFactory.CreateInstance(type, genericTypeParameters);
     }
 
     /// <inheritdoc/>
-    public T CreateInstance<T>()
+    public T CreateInstance<T>(Type[]? genericTypeParameters = null)
     {
         if (IsDisposed)
             throw new ObjectDisposedException(nameof(ServiceContainer));
 
-        return ServiceFactory.CreateInstance<T>();
+        return ServiceFactory.CreateInstance<T>(genericTypeParameters);
     }
 
     /// <inheritdoc/>

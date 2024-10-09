@@ -1,4 +1,6 @@
-﻿namespace Snowberry.DependencyInjection.Tests.Services.AsyncDisposeTestServices;
+﻿using Snowberry.DependencyInjection.Tests.Services.Interfaces;
+
+namespace Snowberry.DependencyInjection.Tests.Services.AsyncDisposeTestServices;
 
 public class TestAnotherServiceAsync : ITestAnotherService
 #if NETCOREAPP
