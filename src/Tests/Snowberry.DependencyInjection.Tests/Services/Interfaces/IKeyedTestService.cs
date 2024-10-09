@@ -1,4 +1,4 @@
-﻿namespace Snowberry.DependencyInjection.Tests.Services;
+﻿namespace Snowberry.DependencyInjection.Tests.Services.Interfaces;
 
 public interface IKeyedTestService
 {

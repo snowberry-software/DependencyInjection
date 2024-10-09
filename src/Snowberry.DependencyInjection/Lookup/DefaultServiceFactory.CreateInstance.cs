@@ -9,23 +9,23 @@ namespace Snowberry.DependencyInjection.Lookup;
 public partial class DefaultServiceFactory
 {
     /// <inheritdoc/>
-    public object CreateInstance(Type type)
+    public object CreateInstance(Type type, Type[]? genericTypeParameters = null)
     {
         _ = type ?? throw new ArgumentNullException(nameof(type));
 
-        return CreateInstance(type, null);
+        return CreateInstance(type, scope: null, genericTypeParameters);
     }
 
     /// <inheritdoc/>
-    public T CreateInstance<T>()
+    public T CreateInstance<T>(Type[]? genericTypeParameters = null)
     {
-        return CreateInstance<T>(null);
+        return CreateInstance<T>(scope: null, genericTypeParameters);
     }
 
     /// <inheritdoc/>
-    public T CreateInstance<T>(IScope? scope)
+    public T CreateInstance<T>(IScope? scope, Type[]? genericTypeParameters = null)
     {
-        object service = CreateInstance(typeof(T), scope)!;
+        object service = CreateInstance(typeof(T), scope, genericTypeParameters)!;
 
         if (service is T type)
             return type;
@@ -58,12 +58,20 @@ public partial class DefaultServiceFactory
     }
 
     /// <inheritdoc/>
-    public object CreateInstance(Type type, IScope? scope)
+    public object CreateInstance(Type type, IScope? scope, Type[]? genericTypeParameters = null)
     {
         _ = type ?? throw new ArgumentNullException(nameof(type));
 
         if (type.IsInterface || type.IsAbstract)
             throw new InvalidServiceImplementationType(type, $"Cannot instantiate abstract classes or interfaces! ({type.FullName})!");
+
+        if (type.IsGenericTypeDefinition)
+        {
+            if (genericTypeParameters == null)
+                throw new ArgumentNullException(nameof(genericTypeParameters));
+
+            type = type.MakeGenericType(genericTypeParameters);
+        }
 
         var constructor = GetConstructor(type);
 

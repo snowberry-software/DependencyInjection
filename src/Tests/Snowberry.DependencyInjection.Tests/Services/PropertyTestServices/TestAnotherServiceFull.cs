@@ -1,4 +1,5 @@
 ﻿using Snowberry.DependencyInjection.Attributes;
+using Snowberry.DependencyInjection.Tests.Services.Interfaces;
 
 namespace Snowberry.DependencyInjection.Tests.Services.PropertyTestServices;
 

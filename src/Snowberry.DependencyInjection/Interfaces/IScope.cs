@@ -14,15 +14,15 @@ public interface IScope : IDisposableContainer, IDisposable
     /// Sets the current <see cref="IServiceFactory"/>.
     /// </summary>
     /// <param name="serviceFactory">The service factory to use.</param>
-    public void SetServiceFactory(IServiceFactory serviceFactory);
+    void SetServiceFactory(IServiceFactory serviceFactory);
 
     /// <summary>
     /// Gets or initializes the service factory to resolve services.
     /// </summary>
-    public IServiceFactory ServiceFactory { get; }
+    IServiceFactory ServiceFactory { get; }
 
     /// <summary>
     /// Returns whether the <see cref="IScope"/> has been disposed or not.
     /// </summary>
-    public bool IsDisposed { get; }
+    bool IsDisposed { get; }
 }

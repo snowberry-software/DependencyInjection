@@ -6,22 +6,30 @@ namespace Snowberry.DependencyInjection.Interfaces;
 public interface IServiceDescriptor
 {
     /// <summary>
+    /// Clones the <see cref="IServiceDescriptor"/> for the specified <paramref name="serviceType"/>.
+    /// </summary>
+    /// <remarks>The <see cref="SingletonInstance"/> will be ignored.</remarks>
+    /// <param name="serviceType">The service type.</param>
+    /// <returns>The cloned <see cref="IServiceDescriptor"/>.</returns>
+    IServiceDescriptor CloneFor(Type serviceType);
+
+    /// <summary>
     /// The instance of the <see cref="ImplementationType"/>.
     /// </summary>
-    public object? SingletonInstance { get; set; }
+    object? SingletonInstance { get; set; }
 
     /// <summary>
     /// The registered service type.
     /// </summary>
-    public Type ServiceType { get; }
+    Type ServiceType { get; }
 
     /// <summary>
     /// The type that represents the implementation of the service.
     /// </summary>
-    public Type ImplementationType { get; }
+    Type ImplementationType { get; }
 
     /// <summary>
     /// The lifetime of the service.
     /// </summary>
-    public ServiceLifetime Lifetime { get; }
+    ServiceLifetime Lifetime { get; }
 }
