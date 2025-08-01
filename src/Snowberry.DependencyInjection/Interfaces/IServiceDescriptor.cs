@@ -1,6 +1,23 @@
 namespace Snowberry.DependencyInjection.Interfaces;
 
 /// <summary>
+/// Represents a factory function that creates an instance of a service.
+/// </summary>
+/// <param name="serviceProvider">The service provider to use for resolving dependencies.</param>
+/// <param name="serviceKey">An optional key to identify the service instance, if applicable.</param>
+/// <returns>An instance of the service implementation.</returns>
+public delegate object ServiceInstanceFactory(IServiceProvider serviceProvider, object? serviceKey);
+
+/// <summary>
+/// Represents a factory function that creates an instance of a service.
+/// </summary>
+/// <typeparam name="TImpl"> The type of the service implementation.</typeparam>
+/// <param name="serviceProvider">The service provider to use for resolving dependencies.</param>
+/// <param name="serviceKey">An optional key to identify the service instance, if applicable.</param>
+/// <returns>An instance of the service implementation.</returns>
+public delegate TImpl ServiceInstanceFactory<TImpl>(IServiceProvider serviceProvider, object? serviceKey);
+
+/// <summary>
 /// Represents the data of a registered service.
 /// </summary>
 public interface IServiceDescriptor
@@ -17,6 +34,11 @@ public interface IServiceDescriptor
     /// The instance of the <see cref="ImplementationType"/>.
     /// </summary>
     object? SingletonInstance { get; set; }
+
+    /// <summary>
+    /// The factory function to create an instance of the service.
+    /// </summary>
+    ServiceInstanceFactory? InstanceFactory { get; set; }
 
     /// <summary>
     /// The registered service type.

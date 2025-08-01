@@ -83,4 +83,31 @@ public class KeyedTests
         Assert.True(scopedService.IsDisposed);
         Assert.NotEqual(serviceContainer.GetKeyedService<ITestService>("_KEY0_"), scopedService);
     }
+
+    [Fact]
+    public void Keyed_Simple_Singleton_Factory()
+    {
+        using var serviceContainer = new ServiceContainer();
+        serviceContainer.RegisterSingleton<ITestService>((sp, serviceKey) =>
+        {
+            return new TestService()
+            {
+                Name = "1"
+            };
+        });
+        serviceContainer.RegisterSingleton<ITestService>((sp, serviceKey) =>
+        {
+            if (serviceKey is not "_KEY_")
+                throw new ArgumentException("Invalid service key", nameof(serviceKey));
+
+            return new TestService()
+            {
+                Name = "2"
+            };
+        }, "_KEY_");
+
+        Assert.Equal("2", serviceContainer.GetKeyedService<ITestService>("_KEY_").Name);
+        Assert.Equal(2, serviceContainer.Count);
+        Assert.Equal(2, serviceContainer.GetServiceDescriptors().Length);
+    }
 }

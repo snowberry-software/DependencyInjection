@@ -82,7 +82,7 @@ public partial class DefaultServiceFactory
         }
         else
         {
-            object[] args = constructor.GetParameters()
+            object[] args = [.. constructor.GetParameters()
                 .Select(param =>
                 {
                     object? serviceKey = null;
@@ -92,8 +92,7 @@ public partial class DefaultServiceFactory
                         serviceKey = keyedServiceAttribute.ServiceKey;
 
                     return GetInstanceFromServiceType(param.ParameterType, scope, serviceKey);
-                })
-                .ToArray();
+                })];
 
             object? instance = constructor.Invoke(args);
 
