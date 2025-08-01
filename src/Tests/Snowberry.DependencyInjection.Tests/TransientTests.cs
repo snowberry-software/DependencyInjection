@@ -28,8 +28,25 @@ public class TransientTests
         TestTransient<ITestService>(serviceContainer);
     }
 
-#pragma warning disable xUnit1013 // Public method should be marked as test
-    public static void TestTransient<T>(ServiceContainer serviceContainer) where T : ITestService
+    [Fact]
+    public void RegisterTransientWithFactory()
+    {
+        using var serviceContainer = new ServiceContainer();
+        serviceContainer.RegisterTransient<ITestService, TestService>(instanceFactory: (sp, serviceKey) =>
+        {
+            return new()
+            {
+                Name = "Factory1337"
+            };
+        });
+
+        Assert.Equal(1, serviceContainer.Count);
+
+        var serviceB = TestTransient<ITestService>(serviceContainer);
+        Assert.Equal("Factory1337", serviceB.Name);
+    }
+
+    public static T TestTransient<T>(ServiceContainer serviceContainer) where T : ITestService
     {
         _ = serviceContainer ?? throw new ArgumentNullException(nameof(serviceContainer));
 
@@ -46,6 +63,6 @@ public class TransientTests
         serviceA.Name = "x";
 
         Assert.NotSame(serviceA.Name, serviceB.Name);
+        return serviceB;
     }
-#pragma warning restore xUnit1013 // Public method should be marked as test
 }

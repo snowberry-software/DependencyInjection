@@ -84,4 +84,7 @@ public class ServiceDescriptor : IServiceDescriptor
 
     /// <inheritdoc/>
     public ServiceLifetime Lifetime { get; }
+
+    /// <inheritdoc/>
+    public ServiceInstanceFactory? InstanceFactory { get; set; }
 }

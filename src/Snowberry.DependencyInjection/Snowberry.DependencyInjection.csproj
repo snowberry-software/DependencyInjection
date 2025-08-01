@@ -6,11 +6,10 @@
         <Nullable>enable</Nullable>
         <LangVersion>preview</LangVersion>
 
-
         <Authors>Snowberry Software</Authors>
         <Description>A lightweight easy to use IoC container for .NET.</Description>
 
-        <AssemblyVersion>3.6.0.0</AssemblyVersion>
+        <AssemblyVersion>3.7.0.0</AssemblyVersion>
         <VersionPrefix>$(AssemblyVersion)</VersionPrefix>
 
         <IsPackable>true</IsPackable>
@@ -49,7 +48,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <!--<Content Include="$(OutputPath)\$(AssemblyName).dll">
+        <!--<Content
+        Include="$(OutputPath)\$(AssemblyName).dll">
 			<Pack>True</Pack>
 			<PackagePath>lib\$(TargetFramework)</PackagePath>
 		</Content>-->

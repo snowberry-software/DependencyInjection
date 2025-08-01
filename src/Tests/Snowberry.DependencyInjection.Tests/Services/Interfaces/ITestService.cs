@@ -2,7 +2,7 @@
 
 public interface ITestService : IDisposable
 {
-    public string? Name { get; set; }
+    string? Name { get; set; }
 
     bool IsDisposed { get; }
 }

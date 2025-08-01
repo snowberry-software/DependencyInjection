@@ -45,4 +45,23 @@ public class SingletonTests
         var service = serviceContainer.GetService<ITestService>();
         Assert.NotNull(service);
     }
+
+    [Fact]
+    public void RegisterSingletonWithFactory()
+    {
+        using var serviceContainer = new ServiceContainer();
+        serviceContainer.RegisterSingleton<TestService>(instanceFactory: (sp, serviceKey) =>
+        {
+            return new TestService
+            {
+                Name = "Factory1337"
+            };
+        });
+
+        Assert.Equal(1, serviceContainer.Count);
+
+        var service = serviceContainer.GetService<TestService>();
+        Assert.NotNull(service);
+        Assert.Equal("Factory1337", service.Name);
+    }
 }

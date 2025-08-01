@@ -17,12 +17,33 @@ public interface IServiceRegistry
     IServiceRegistry Register(Type serviceType, Type implementationType, object? serviceKey, ServiceLifetime lifetime, object? singletonInstance);
 
     /// <summary>
+    /// Registers the given service.
+    /// </summary>
+    /// <param name="serviceType">The service to register.</param>
+    /// <param name="implementationType">The implementation type of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
+    /// <param name="lifetime">The lifetime of the service.</param>
+    /// <param name="singletonInstance">The optional singleton instance.</param>
+    /// <param name="instanceFactory">The factory function that will be used to create the instance of the service.</param>
+    /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
+    IServiceRegistry Register(Type serviceType, Type implementationType, object? serviceKey, ServiceLifetime lifetime, object? singletonInstance, ServiceInstanceFactory? instanceFactory);
+
+    /// <summary>
     /// Creates and registers a singleton service of the type <typeparamref name="T"/>.
     /// </summary>
     /// <param name="serviceKey">The optional service key.</param>
     /// <typeparam name="T">The service to register.</typeparam>
     /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
     IServiceRegistry RegisterSingleton<T>(object? serviceKey = null);
+
+    /// <summary>
+    /// Creates and registers a singleton service of the type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="instanceFactory">The factory function that will be used to create the instance of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
+    /// <typeparam name="T">The service to register.</typeparam>
+    /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
+    IServiceRegistry RegisterSingleton<T>(ServiceInstanceFactory instanceFactory, object? serviceKey = null);
 
     /// <summary>
     /// Registers a singleton service of the type <typeparamref name="T"/> using the given <paramref name="instance"/>.
@@ -43,6 +64,16 @@ public interface IServiceRegistry
     IServiceRegistry RegisterSingleton<T, TImpl>(object? serviceKey = null) where TImpl : T;
 
     /// <summary>
+    /// Creates and registers a singleton service of the type <typeparamref name="TImpl"/> for the service <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="instanceFactory">The factory function that will be used to create the instance of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
+    /// <typeparam name="T">The service to register.</typeparam>
+    /// <typeparam name="TImpl">The implementation of the service.</typeparam>
+    /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
+    IServiceRegistry RegisterSingleton<T, TImpl>(ServiceInstanceFactory<TImpl> instanceFactory, object? serviceKey = null) where TImpl : T;
+
+    /// <summary>
     /// Registers a singleton service of the type <typeparamref name="TImpl"/> for the service <typeparamref name="T"/> using the given <paramref name="instance"/>.
     /// </summary>
     /// <param name="instance">The instance that will be returned when requesting the <typeparamref name="T"/> service.</param>
@@ -61,6 +92,15 @@ public interface IServiceRegistry
     IServiceRegistry RegisterTransient<T>(object? serviceKey = null);
 
     /// <summary>
+    /// Creates and registers a transient service of the type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="instanceFactory">The factory function that will be used to create the instance of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
+    /// <typeparam name="T">The service to register.</typeparam>
+    /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
+    IServiceRegistry RegisterTransient<T>(ServiceInstanceFactory instanceFactory, object? serviceKey = null);
+
+    /// <summary>
     /// Creates and registers a transient service of the type <typeparamref name="TImpl"/> for the service <typeparamref name="T"/>.
     /// </summary>
     /// <param name="serviceKey">The optional service key.</param>
@@ -68,6 +108,16 @@ public interface IServiceRegistry
     /// <typeparam name="TImpl">The implementation of the service.</typeparam>
     /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
     IServiceRegistry RegisterTransient<T, TImpl>(object? serviceKey = null) where TImpl : T;
+
+    /// <summary>
+    /// Creates and registers a transient service of the type <typeparamref name="TImpl"/> for the service <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="instanceFactory">The factory function that will be used to create the instance of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
+    /// <typeparam name="T">The service to register.</typeparam>
+    /// <typeparam name="TImpl">The implementation of the service.</typeparam>
+    /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
+    IServiceRegistry RegisterTransient<T, TImpl>(ServiceInstanceFactory<TImpl> instanceFactory, object? serviceKey = null) where TImpl : T;
 
     /// <summary>
     /// Creates and registers a scoped service of the type <typeparamref name="T"/>.
@@ -78,6 +128,15 @@ public interface IServiceRegistry
     IServiceRegistry RegisterScoped<T>(object? serviceKey = null);
 
     /// <summary>
+    /// Creates and registers a scoped service of the type <typeparamref name="T"/>.
+    /// </summary>
+    /// <param name="instanceFactory">The factory function that will be used to create the instance of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
+    /// <typeparam name="T">The service to register.</typeparam>
+    /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
+    IServiceRegistry RegisterScoped<T>(ServiceInstanceFactory instanceFactory, object? serviceKey = null);
+
+    /// <summary>
     /// Creates and registers a scoped service of the type <typeparamref name="TImpl"/> for the service <typeparamref name="T"/>.
     /// </summary>
     /// <param name="serviceKey">The optional service key.</param>
@@ -85,6 +144,16 @@ public interface IServiceRegistry
     /// <typeparam name="TImpl">The implementation of the service.</typeparam>
     /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
     IServiceRegistry RegisterScoped<T, TImpl>(object? serviceKey = null) where TImpl : T;
+
+    /// <summary>
+    /// Creates and registers a scoped service of the type <typeparamref name="TImpl"/> for the service <typeparamref name="T"/>.
+    /// </summary>
+    ///  <param name="instanceFactory">The factory function that will be used to create the instance of the service.</param>
+    /// <param name="serviceKey">The optional service key.</param>
+    /// <typeparam name="T">The service to register.</typeparam>
+    /// <typeparam name="TImpl">The implementation of the service.</typeparam>
+    /// <returns>The current <see cref="IServiceRegistry"/> for chaining calls.</returns>
+    IServiceRegistry RegisterScoped<T, TImpl>(ServiceInstanceFactory<TImpl> instanceFactory, object? serviceKey = null) where TImpl : T;
 
     /// <summary>
     /// Creates a new scope which can be used to resolve scoped services.

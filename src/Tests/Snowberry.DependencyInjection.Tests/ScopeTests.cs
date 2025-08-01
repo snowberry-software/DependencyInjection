@@ -74,8 +74,46 @@ public class ScopeTests
     }
 
     [Fact]
-    public void ScopeResolvingNotEqual()
+    public void GlobalScopeWithFactory()
     {
+        ITestService globalTestService;
+        ITestService scopedTestService;
 
+        IServiceContainer serviceContainer;
+        IScope scope;
+        using (serviceContainer = new ServiceContainer())
+        {
+            serviceContainer.RegisterScoped<ITestService, TestService>(instanceFactory: (sp, serviceKey) =>
+            {
+                return new TestService
+                {
+                    Name = "Factory1337"
+                };
+            });
+
+            globalTestService = serviceContainer.GetService<ITestService>();
+
+            Assert.Equal("Factory1337", globalTestService.Name);
+
+            using (scope = serviceContainer.CreateScope())
+            {
+                scopedTestService = scope.ServiceFactory.GetService<ITestService>();
+
+                Assert.Equal(1, scope.DisposableCount);
+                Assert.Equal(scopedTestService, scope.ServiceFactory.GetService<ITestService>());
+                Assert.Equal("Factory1337", scopedTestService.Name);
+            }
+
+            Assert.NotEqual(globalTestService, scopedTestService);
+            Assert.True(scopedTestService.IsDisposed);
+
+            Assert.Equal(1, scope.DisposableCount);
+            Assert.Equal(1, serviceContainer.DisposableCount);
+        }
+
+        Assert.Equal(1, serviceContainer.DisposableCount);
+        Assert.Equal(1, scope.DisposableCount);
+        Assert.True(scope.IsDisposed);
+        Assert.True(serviceContainer.IsDisposed);
     }
 }

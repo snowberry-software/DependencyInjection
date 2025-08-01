@@ -31,6 +31,23 @@ public partial class ServiceContainer
     }
 
     /// <inheritdoc/>
+    public IServiceRegistry RegisterSingleton<T>(ServiceInstanceFactory instanceFactory, object? serviceKey = null)
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        _ = instanceFactory ?? throw new ArgumentNullException(nameof(instanceFactory));
+
+        return Register(
+            typeof(T),
+            typeof(T),
+            serviceKey,
+            ServiceLifetime.Singleton,
+            singletonInstance: null,
+            instanceFactory: instanceFactory);
+    }
+
+    /// <inheritdoc/>
     public IServiceRegistry RegisterSingleton<T>(object? serviceKey = null)
     {
         if (IsDisposed)
@@ -41,7 +58,8 @@ public partial class ServiceContainer
             typeof(T),
             serviceKey,
             ServiceLifetime.Singleton,
-            null);
+            singletonInstance: null,
+            instanceFactory: null);
     }
 
     /// <inheritdoc/>
@@ -57,7 +75,8 @@ public partial class ServiceContainer
             typeof(T),
             serviceKey,
             ServiceLifetime.Singleton,
-            instance);
+            singletonInstance: instance,
+            instanceFactory: null);
     }
 
     /// <inheritdoc/>
@@ -71,7 +90,23 @@ public partial class ServiceContainer
             typeof(TImpl),
             serviceKey,
             ServiceLifetime.Singleton,
-            null);
+            singletonInstance: null,
+            instanceFactory: null);
+    }
+
+    /// <inheritdoc/>
+    public IServiceRegistry RegisterSingleton<T, TImpl>(ServiceInstanceFactory<TImpl> instanceFactory, object? serviceKey = null) where TImpl : T
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        return Register(
+            typeof(T),
+            typeof(TImpl),
+            serviceKey,
+            ServiceLifetime.Singleton,
+            singletonInstance: null,
+            instanceFactory: (serviceProvider, serviceKey) => instanceFactory(serviceProvider, serviceKey)!);
     }
 
     /// <inheritdoc/>
@@ -105,6 +140,33 @@ public partial class ServiceContainer
     }
 
     /// <inheritdoc/>
+    public IServiceRegistry RegisterTransient<T>(ServiceInstanceFactory instanceFactory, object? serviceKey = null)
+    {
+        return Register(
+            typeof(T),
+            typeof(T),
+            serviceKey,
+            ServiceLifetime.Transient,
+            singletonInstance: null,
+            instanceFactory: instanceFactory);
+    }
+
+    /// <inheritdoc/>
+    public IServiceRegistry RegisterTransient<T, TImpl>(ServiceInstanceFactory<TImpl> instanceFactory, object? serviceKey = null) where TImpl : T
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        return Register(
+            typeof(T),
+            typeof(TImpl),
+            serviceKey,
+            ServiceLifetime.Transient,
+            singletonInstance: null,
+            instanceFactory: (serviceProvider, serviceKey) => instanceFactory(serviceProvider, serviceKey)!);
+    }
+
+    /// <inheritdoc/>
     public IServiceRegistry RegisterTransient<T, TImpl>(object? serviceKey = null) where TImpl : T
     {
         if (IsDisposed)
@@ -115,7 +177,7 @@ public partial class ServiceContainer
             typeof(TImpl),
             serviceKey,
             ServiceLifetime.Transient,
-            null);
+            singletonInstance: null);
     }
 
     /// <inheritdoc/>
@@ -129,7 +191,37 @@ public partial class ServiceContainer
             typeof(T),
             serviceKey,
             ServiceLifetime.Scoped,
-            null);
+            singletonInstance: null);
+    }
+
+    /// <inheritdoc/>
+    public IServiceRegistry RegisterScoped<T>(ServiceInstanceFactory instanceFactory, object? serviceKey = null)
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        return Register(
+            typeof(T),
+            typeof(T),
+            serviceKey,
+            ServiceLifetime.Scoped,
+            singletonInstance: null,
+            instanceFactory: instanceFactory);
+    }
+
+    /// <inheritdoc/>
+    public IServiceRegistry RegisterScoped<T, TImpl>(ServiceInstanceFactory<TImpl> instanceFactory, object? serviceKey = null) where TImpl : T
+    {
+        if (IsDisposed)
+            throw new ObjectDisposedException(nameof(ServiceContainer));
+
+        return Register(
+            typeof(T),
+            typeof(TImpl),
+            serviceKey,
+            ServiceLifetime.Scoped,
+            singletonInstance: null,
+            instanceFactory: (serviceProvider, serviceKey) => instanceFactory(serviceProvider, serviceKey)!);
     }
 
     /// <inheritdoc/>
@@ -143,7 +235,7 @@ public partial class ServiceContainer
             typeof(TImpl),
             serviceKey,
             ServiceLifetime.Scoped,
-            null);
+            singletonInstance: null);
     }
 
     /// <inheritdoc/>
@@ -154,6 +246,24 @@ public partial class ServiceContainer
         ServiceLifetime lifetime,
         object? singletonInstance)
     {
+        return Register(
+            serviceType: serviceType,
+            implementationType: implementationType,
+            serviceKey: serviceKey,
+            lifetime: lifetime,
+            singletonInstance: singletonInstance,
+            instanceFactory: null);
+    }
+
+    /// <inheritdoc/>
+    public IServiceRegistry Register(
+        Type serviceType,
+        Type implementationType,
+        object? serviceKey,
+        ServiceLifetime lifetime,
+        object? singletonInstance,
+        ServiceInstanceFactory? instanceFactory)
+    {
         _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
         _ = implementationType ?? throw new ArgumentNullException(nameof(implementationType));
 
@@ -163,13 +273,13 @@ public partial class ServiceContainer
         if (singletonInstance != null && lifetime != ServiceLifetime.Singleton)
             throw new ArgumentException("Singleton can't be used in non-singleton lifetime!", nameof(singletonInstance));
 
+        if (singletonInstance != null && instanceFactory != null)
+            throw new ArgumentException("Singleton instance and instance factory can't be used together!", nameof(singletonInstance));
+
         lock (_lock)
         {
             var serviceIdentifier = new ServiceIdentifier(serviceType, serviceKey);
-
-            bool foundExistingServiceDescriptor = false;
-            if (_serviceDescriptorMapping.ContainsKey(serviceIdentifier))
-                foundExistingServiceDescriptor = true;
+            bool foundExistingServiceDescriptor = _serviceDescriptorMapping.ContainsKey(serviceIdentifier);
 
             var newDescriptor = lifetime switch
             {
@@ -178,6 +288,8 @@ public partial class ServiceContainer
                 ServiceLifetime.Transient => ServiceDescriptor.Transient(serviceType, implementationType),
                 _ => ThrowHelper.ThrowServiceLifetimeNotImplemented(lifetime) as IServiceDescriptor
             };
+
+            newDescriptor!.InstanceFactory = instanceFactory;
 
             if (!foundExistingServiceDescriptor)
             {

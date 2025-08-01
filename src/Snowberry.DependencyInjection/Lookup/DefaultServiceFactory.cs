@@ -70,7 +70,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
             }
         }
 
-        object? scopedInstance = CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
+        object? scopedInstance = serviceDescriptor.InstanceFactory?.Invoke(this, serviceKey) ?? CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
 
         if (scopedInstance.IsDisposable())
             if (scope != null)
@@ -148,7 +148,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
                 // NOTE(VNC): Only register the disposable of the singleton if no explicit instance has been set before.
                 if (serviceDescriptor.SingletonInstance == null)
                 {
-                    serviceDescriptor.SingletonInstance = CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
+                    serviceDescriptor.SingletonInstance = serviceDescriptor.InstanceFactory?.Invoke(this, serviceKey) ?? CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
 
                     if (serviceDescriptor.SingletonInstance.IsDisposable())
                         ServiceDescriptorReceiver.RegisterDisposable(serviceDescriptor.SingletonInstance);
@@ -158,7 +158,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
 
             case ServiceLifetime.Transient:
 
-                object? transientInstance = CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
+                object? transientInstance = serviceDescriptor.InstanceFactory?.Invoke(this, serviceKey) ?? CreateInstance(serviceDescriptor.ImplementationType, scope, requestedServiceType.GenericTypeArguments);
 
                 if (transientInstance.IsDisposable())
                 {
@@ -183,13 +183,13 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
     /// <inheritdoc/>
     public T? GetOptionalService<T>()
     {
-        return GetOptionalService<T>(null);
+        return GetOptionalService<T>(scope: null);
     }
 
     /// <inheritdoc/>
     public T GetService<T>()
     {
-        return GetService<T>(null);
+        return GetService<T>(scope: null);
     }
 
     /// <inheritdoc/>
@@ -197,7 +197,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
     {
         _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
 
-        return GetService(serviceType, null);
+        return GetOptionalService(serviceType, scope: null);
     }
 
     /// <inheritdoc/>
@@ -205,7 +205,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
     {
         _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
 
-        return GetOptionalService(serviceType, null);
+        return GetOptionalService(serviceType, scope: null);
     }
 
     /// <inheritdoc/>
@@ -213,7 +213,7 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
     {
         _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
 
-        return GetKeyedService(serviceType, serviceKey, null);
+        return GetKeyedService(serviceType, serviceKey, scope: null);
     }
 
     /// <inheritdoc/>
@@ -221,19 +221,19 @@ public partial class DefaultServiceFactory : IScopedServiceFactory
     {
         _ = serviceType ?? throw new ArgumentNullException(nameof(serviceType));
 
-        return GetOptionalKeyedService(serviceType, serviceKey, null);
+        return GetOptionalKeyedService(serviceType, serviceKey, scope: null);
     }
 
     /// <inheritdoc/>
     public T GetKeyedService<T>(object? serviceKey)
     {
-        return GetKeyedService<T>(serviceKey, null);
+        return GetKeyedService<T>(serviceKey, scope: null);
     }
 
     /// <inheritdoc/>
     public T? GetOptionalKeyedService<T>(object? serviceKey)
     {
-        return GetOptionalKeyedService<T>(serviceKey, null);
+        return GetOptionalKeyedService<T>(serviceKey, scope: null);
     }
 
     /// <summary>
